@@ -25,3 +25,6 @@
 [submodule "ext/eigen"]
 	path = ext/eigen
 	url = https://gitlab.com/libeigen/eigen.git
+[submodule "ext/hypothesis"]
+	path = ext/hypothesis
+	url = https://github.com/wjakob/hypothesis
