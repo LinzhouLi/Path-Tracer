@@ -1,5 +1,5 @@
-cmake_minimum_required (VERSION 3.12)
-project(PathTracer VERSION 1.0)
+cmake_minimum_required (VERSION 3.8)
+project(PathTracer)
 
 add_subdirectory(ext ext_build)
 
@@ -18,6 +18,8 @@ include_directories(
   ${PCG32_INCLUDE_DIR}
   # PugiXML parser
   ${PUGIXML_INCLUDE_DIR}
+  # Helper functions for statistical hypothesis tests
+  ${HYPOTHESIS_INCLUDE_DIR}
   # GLFW library for OpenGL context creation
   SYSTEM ${GLFW_INCLUDE_DIR}
   # GLEW library for accessing OpenGL functions
@@ -37,14 +39,14 @@ include_directories(
 # code file to PathTracer, be sure to include it in this list.
 file(GLOB HEADERS "include/pt/*.h")
 file(GLOB SOURCES "src/*.cpp")
-add_executable(${PROJECT_NAME} ${HEADERS} ${SOURCES})
+add_executable(PathTracer ${HEADERS} ${SOURCES})
 
 add_definitions(${NANOGUI_EXTRA_DEFS})
 
 if (WIN32)
-  target_link_libraries(${PROJECT_NAME} tbb_static pugixml IlmImf nanogui ${NANOGUI_EXTRA_LIBS} zlibstatic)
+  target_link_libraries(PathTracer tbb_static pugixml IlmImf nanogui ${NANOGUI_EXTRA_LIBS} zlibstatic)
 else()
-  target_link_libraries(${PROJECT_NAME} tbb_static pugixml IlmImf nanogui ${NANOGUI_EXTRA_LIBS})
+  target_link_libraries(PathTracer tbb_static pugixml IlmImf nanogui ${NANOGUI_EXTRA_LIBS})
 endif()
 
 # Force colored output for the ninja generator
@@ -58,4 +60,4 @@ if (CMAKE_GENERATOR STREQUAL "Ninja")
   endif()
 endif()
 
-target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
+target_compile_features(PathTracer PRIVATE cxx_std_17)
