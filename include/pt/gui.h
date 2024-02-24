@@ -7,6 +7,7 @@
 #pragma once
 
 #include <pt/common.h>
+#include <nanogui/screen.h>
 
 namespace pt {
 

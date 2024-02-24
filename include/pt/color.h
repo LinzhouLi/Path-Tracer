@@ -50,17 +50,54 @@ public:
     Color3f clamp() const { return Color3f(std::max(r(), 0.0f),
         std::max(g(), 0.0f), std::max(b(), 0.0f)); }
 
-    /// Check if the color vector contains a NaN/Inf/negative value
-    bool isValid() const;
+    /// Convert from linear RGB to sRGB
+    Color3f Color3f::toSRGB() const {
+        Color3f result;
+
+        for (int i = 0; i < 3; ++i) {
+            float value = coeff(i);
+
+            if (value <= 0.0031308f)
+                result[i] = 12.92f * value;
+            else
+                result[i] = (1.0f + 0.055f)
+                * std::pow(value, 1.0f / 2.4f) - 0.055f;
+        }
+
+        return result;
+    }
 
     /// Convert from sRGB to linear RGB
-    Color3f toLinearRGB() const;
+    Color3f Color3f::toLinearRGB() const {
+        Color3f result;
 
-    /// Convert from linear RGB to sRGB
-    Color3f toSRGB() const;
+        for (int i = 0; i < 3; ++i) {
+            float value = coeff(i);
+
+            if (value <= 0.04045f)
+                result[i] = value * (1.0f / 12.92f);
+            else
+                result[i] = std::pow((value + 0.055f)
+                    * (1.0f / 1.055f), 2.4f);
+        }
+
+        return result;
+    }
+
+    /// Check if the color vector contains a NaN/Inf/negative value
+    bool Color3f::isValid() const {
+        for (int i = 0; i < 3; ++i) {
+            float value = coeff(i);
+            if (value < 0 || !std::isfinite(value))
+                return false;
+        }
+        return true;
+    }
 
     /// Return the associated luminance
-    float getLuminance() const;
+    float Color3f::getLuminance() const {
+        return coeff(0) * 0.212671f + coeff(1) * 0.715160f + coeff(2) * 0.072169f;
+    }
 
     /// Return a human-readable string summary
     std::string toString() const {

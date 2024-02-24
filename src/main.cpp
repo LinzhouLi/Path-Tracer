@@ -26,7 +26,12 @@ static void render() {
         gui = new GUI(result);
     }
 
-    
+    Sleep(2000);
+
+    if (useGui) {
+        delete gui;
+        nanogui::shutdown();
+    }
 
 }
 

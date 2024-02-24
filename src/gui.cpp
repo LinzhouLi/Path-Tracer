@@ -6,7 +6,7 @@
 
 
 #include <pt/gui.h>
-#include <nori/block.h>
+#include <pt/block.h>
 #include <nanogui/shader.h>
 #include <nanogui/label.h>
 #include <nanogui/slider.h>
@@ -16,10 +16,10 @@
 
 namespace pt {
 
-GUI::GUI(const ImageBlock &block)
- : nanogui::Screen(nanogui::Vector2i(block.getSize().x(), block.getSize().y() + 36),
-                   "Nori", false),
-   m_block(block) {
+GUI::GUI(const ImageBlock &block) : 
+    nanogui::Screen(nanogui::Vector2i(block.getSize().x(), block.getSize().y() + 36), "PathTracer", false), 
+    m_block(block) 
+{
     using namespace nanogui;
     inc_ref();
 
@@ -65,7 +65,7 @@ GUI::GUI(const ImageBlock &block)
             vec2 total_size = size + 2 * borderSize;
             vec2 scale = size / total_size;
             uv = vec2(position.x * scale.x + borderSize / total_size.x,
-                      1 - (position.y * scale.y + borderSize / total_size.y));
+                        1 - (position.y * scale.y + borderSize / total_size.y));
         })",
         /* Fragment shader */
         R"(#version 330
@@ -109,7 +109,7 @@ GUI::GUI(const ImageBlock &block)
         Texture::PixelFormat::RGBA,
         Texture::ComponentFormat::Float32,
         nanogui::Vector2i(size.x() + 2 * m_block.getBorderSize(),
-                          size.y() + 2 * m_block.getBorderSize()),
+                            size.y() + 2 * m_block.getBorderSize()),
         Texture::InterpolationMode::Nearest,
         Texture::InterpolationMode::Nearest);
 

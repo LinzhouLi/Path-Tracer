@@ -4,6 +4,7 @@
     Copyright (c) 2015 by Wenzel Jakob
 */
 
+#include <pt/color.h>
 #include <pt/block.h>
 #include <pt/bitmap.h>
 #include <tbb/tbb.h>
@@ -41,7 +42,7 @@ void ImageBlock::put(const Point2f &_pos, const Color3f &value) {
         return;
     }
 
-    int x = std::floor(pos.x()), y = std::floor(pos.y());
+    int x = std::floor(_pos.x()), y = std::floor(_pos.y());
     coeffRef(y, x) += Color4f(value);
 }
     
