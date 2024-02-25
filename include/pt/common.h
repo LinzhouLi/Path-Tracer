@@ -29,7 +29,6 @@
 #define SQRT_TWO     1.41421356237309504880f
 #define INV_SQRT_TWO 0.70710678118654752440f
 
-
 #if defined(__APPLE__ )
 #define PLATFORM_MACOS
 #elif defined(__linux__)
@@ -119,10 +118,10 @@ using std::cerr;
 using std::endl;
 
 /// Simple exception class, which stores a human-readable error description
-class NoriException : public std::runtime_error {
+class PathTracerException : public std::runtime_error {
 public:
 	/// Variadic template constructor to support printf-style arguments
-	template <typename... Args> NoriException(const char* fmt, const Args &... args)
+	template <typename... Args> PathTracerException(const char* fmt, const Args &... args)
 		: std::runtime_error(tfm::format(fmt, args...)) { }
 };
 

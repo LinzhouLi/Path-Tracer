@@ -39,7 +39,7 @@ include_directories(
 # code file to PathTracer, be sure to include it in this list.
 file(GLOB HEADERS "include/pt/*.h")
 file(GLOB SOURCES "src/*.cpp")
-add_executable(PathTracer ${HEADERS} ${SOURCES})
+add_executable(PathTracer include/tiny_obj_loader.h ${HEADERS} ${SOURCES})
 
 add_definitions(${NANOGUI_EXTRA_DEFS})
 

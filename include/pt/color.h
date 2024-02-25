@@ -60,8 +60,7 @@ public:
             if (value <= 0.0031308f)
                 result[i] = 12.92f * value;
             else
-                result[i] = (1.0f + 0.055f)
-                * std::pow(value, 1.0f / 2.4f) - 0.055f;
+                result[i] = (1.0f + 0.055f) * std::pow(value, 1.0f / 2.4f) - 0.055f;
         }
 
         return result;
@@ -77,8 +76,7 @@ public:
             if (value <= 0.04045f)
                 result[i] = value * (1.0f / 12.92f);
             else
-                result[i] = std::pow((value + 0.055f)
-                    * (1.0f / 1.055f), 2.4f);
+                result[i] = std::pow((value + 0.055f) * (1.0f / 1.055f), 2.4f);
         }
 
         return result;

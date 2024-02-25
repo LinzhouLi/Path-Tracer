@@ -12,12 +12,14 @@
 #include <ImfVersion.h>
 #include <ImfIO.h>
 
+//#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb_image_write.h>
 
 namespace pt {
 
-Bitmap::Bitmap(const std::string &filename) {
+void Bitmap::loadEXR(const std::string &filename) {
     Imf::InputFile file(filename.c_str());
     const Imf::Header &header = file.header();
     const Imf::ChannelList &channels = header.channels();
@@ -37,20 +39,17 @@ Bitmap::Bitmap(const std::string &filename) {
             continue;
         }
 
-        if (!ch_r && (name == "r" || name == "red" ||
-                endsWith(name, ".r") || endsWith(name, ".red"))) {
+        if (!ch_r && (name == "r" || name == "red" || endsWith(name, ".r") || endsWith(name, ".red"))) {
             ch_r = it.name();
-        } else if (!ch_g && (name == "g" || name == "green" ||
-                endsWith(name, ".g") || endsWith(name, ".green"))) {
+        } else if (!ch_g && (name == "g" || name == "green" || endsWith(name, ".g") || endsWith(name, ".green"))) {
             ch_g = it.name();
-        } else if (!ch_b && (name == "b" || name == "blue" ||
-                endsWith(name, ".b") || endsWith(name, ".blue"))) {
+        } else if (!ch_b && (name == "b" || name == "blue" || endsWith(name, ".b") || endsWith(name, ".blue"))) {
             ch_b = it.name();
         }
     }
 
     if (!ch_r || !ch_g || !ch_b)
-        throw NoriException("This is not a standard RGB OpenEXR file!");
+        throw PathTracerException("This is not a standard RGB OpenEXR file!");
 
     size_t compStride = sizeof(float),
            pixelStride = 3 * compStride,
@@ -64,6 +63,33 @@ Bitmap::Bitmap(const std::string &filename) {
     frameBuffer.insert(ch_b, Imf::Slice(Imf::FLOAT, ptr, pixelStride, rowStride));
     file.setFrameBuffer(frameBuffer);
     file.readPixels(dw.min.y, dw.max.y);
+}
+
+void Bitmap::load(const std::string &filename) {
+    int width, height, channel;
+    uint8_t* rgb8 = stbi_load(filename.c_str(), &width, &height, &channel, 0);
+
+    if (rgb8 == nullptr)
+        throw PathTracerException(("Fail to load image file: \"" + filename + "\"!").c_str());
+
+    resize(height, width);
+    cout << "Reading a " << cols() << "x" << rows() << " image file from \""
+         << filename << "\"" << endl;
+
+    uint8_t* inp = rgb8;
+    for (int i = 0; i < rows(); ++i) {
+        for (int j = 0; j < cols(); ++j) {
+            Color3f pixel(
+                (float)(inp[0]) / 255.f,
+                (float)(inp[1]) / 255.f,
+                (float)(inp[2]) / 255.f
+            );
+            coeffRef(i, j) << pixel.toLinearRGB();
+            inp += channel;
+        }
+    }
+
+    stbi_image_free(rgb8);
 }
 
 void Bitmap::saveEXR(const std::string &filename) {
@@ -119,6 +145,12 @@ void Bitmap::savePNG(const std::string &filename) {
     }
 
     delete[] rgb8;
+}
+
+Color3f Bitmap::sample(const Point2f& uv) const {
+    int x = clamp(int(uv.x() * cols()), 0, cols()),
+        y = clamp(int(uv.y() * rows()), 0, rows());
+    return coeff(y, x);
 }
 
 }

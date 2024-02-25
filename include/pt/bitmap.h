@@ -26,17 +26,21 @@ public:
      * The contents will initially be undefined, so make sure
      * to call \ref clear() if necessary
      */
-    Bitmap(const Vector2i &size = Vector2i(0, 0))
-        : Base(size.y(), size.x()) { }
+    Bitmap(const Vector2i &size = Vector2i(0, 0)) : Base(size.y(), size.x()) { }
 
     /// Load an OpenEXR file with the specified filename
-    Bitmap(const std::string &filename);
+    void loadEXR(const std::string& filename);
+
+    /// Load an PNG/JPG file (with sRGB tonemapping) with the specified filename
+    void load(const std::string& filename);
 
     /// Save the bitmap as an EXR file with the specified filename
-    void saveEXR(const std::string &filename);
+    void saveEXR(const std::string& filename);
 
     /// Save the bitmap as a PNG file (with sRGB tonemapping) with the specified filename
-    void savePNG(const std::string &filename);
+    void savePNG(const std::string& filename);
+
+    Color3f sample(const Point2f& uv) const;
 };
 
 }

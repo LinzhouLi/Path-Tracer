@@ -28,7 +28,7 @@ Bitmap *ImageBlock::toBitmap() const {
 
 void ImageBlock::fromBitmap(const Bitmap &bitmap) {
     if (bitmap.cols() != cols() || bitmap.rows() != rows())
-        throw NoriException("Invalid bitmap dimensions!");
+        throw PathTracerException("Invalid bitmap dimensions!");
 
     for (int y=0; y<m_size.y(); ++y)
         for (int x=0; x<m_size.x(); ++x)
