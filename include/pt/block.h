@@ -14,7 +14,7 @@
 #include <pt/vector.h>
 #include <tbb/mutex.h>
 
-#define NORI_BLOCK_SIZE 32 /* Block size used for parallelization */
+#define PT_BLOCK_SIZE 32 /* Block size used for parallelization */
 
 namespace pt {
 

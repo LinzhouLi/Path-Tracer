@@ -42,7 +42,11 @@ void ImageBlock::put(const Point2f &_pos, const Color3f &value) {
         return;
     }
 
-    int x = std::floor(_pos.x()), y = std::floor(_pos.y());
+    Point2f pos(
+        _pos.x() - 0.5f - (m_offset.x() - m_borderSize),
+        _pos.y() - 0.5f - (m_offset.y() - m_borderSize)
+    );
+    int x = std::floor(pos.x()), y = std::floor(pos.y());
     coeffRef(y, x) += Color4f(value);
 }
     
@@ -53,20 +57,18 @@ void ImageBlock::put(ImageBlock &b) {
 
     tbb::mutex::scoped_lock lock(m_mutex);
 
-    block(offset.y(), offset.x(), size.y(), size.x()) 
-        += b.topLeftCorner(size.y(), size.x());
+    block(offset.y(), offset.x(), size.y(), size.x()) += b.topLeftCorner(size.y(), size.x());
 }
 
 std::string ImageBlock::toString() const {
-    return tfm::format("ImageBlock[offset=%s, size=%s]]",
-        m_offset.toString(), m_size.toString());
+    return tfm::format("ImageBlock[offset=%s, size=%s]]", m_offset.toString(), m_size.toString());
 }
 
-BlockGenerator::BlockGenerator(const Vector2i &size, int blockSize)
-        : m_size(size), m_blockSize(blockSize) {
+BlockGenerator::BlockGenerator(const Vector2i &size, int blockSize) : m_size(size), m_blockSize(blockSize) {
     m_numBlocks = Vector2i(
         (int) std::ceil(size.x() / (float) blockSize),
-        (int) std::ceil(size.y() / (float) blockSize));
+        (int) std::ceil(size.y() / (float) blockSize)
+    );
     m_blocksLeft = m_numBlocks.x() * m_numBlocks.y();
     m_direction = ERight;
     m_block = Point2i(m_numBlocks / 2);
@@ -101,8 +103,7 @@ bool BlockGenerator::next(ImageBlock &block) {
                 ++m_numSteps;
             m_stepsLeft = m_numSteps;
         }
-    } while ((m_block.array() < 0).any() ||
-             (m_block.array() >= m_numBlocks.array()).any());
+    } while ((m_block.array() < 0).any() || (m_block.array() >= m_numBlocks.array()).any());
 
     return true;
 }
