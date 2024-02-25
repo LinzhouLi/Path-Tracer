@@ -41,6 +41,9 @@
 namespace pt {
 
 /* Forward declarations */
+struct Normal3f;
+struct Color3f;
+struct Color4f;
 template <typename Scalar, int Dimension>  struct TVector;
 template <typename Scalar, int Dimension>  struct TPoint;
 template <typename Point, typename Vector> struct TRay;
@@ -93,6 +96,7 @@ typedef Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> MatrixXf;
 typedef Eigen::Matrix<uint32_t, Eigen::Dynamic, Eigen::Dynamic> MatrixXu;
 
 /// Some more forward declarations
+class Accel;
 class BSDF;
 class Bitmap;
 class BlockGenerator;

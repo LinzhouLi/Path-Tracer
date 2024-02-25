@@ -12,7 +12,7 @@
 #include <ImfVersion.h>
 #include <ImfIO.h>
 
-//#define STB_IMAGE_IMPLEMENTATION
+// STB_IMAGE_IMPLEMENTATION is already been define in an external project.
 #include <stb_image.h>
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb_image_write.h>
