@@ -1,6 +1,7 @@
 #pragma once
 
 #include <pt/vector.h>
+#include <pt/ray.h>
 
 namespace pt {
 
@@ -38,6 +39,14 @@ public:
 
 	Vector4f apply(const Vector4f& vec) {
 		return m_matrix * vec;
+	}
+
+	Ray apply(const Ray& ray) {
+		return Ray(
+			apply(ray.org, Type::Scaler),
+			apply(ray.dir, Type::Vector),
+			ray.min_dis, ray.max_dis
+		);
 	}
 
 private:
