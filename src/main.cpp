@@ -19,15 +19,15 @@ static Bitmap* testBitmap;
 static Vector2i outputSize(768, 768);
 
 static void renderBlock(ImageBlock& block) {
-    Point2i offset = block.getOffset();
+    Vector2i offset = block.getOffset();
     Vector2i size = block.getSize();
 
     block.clear();
     for (uint32_t y = 0; y < size.y(); ++y) {
         for (uint32_t x = 0; x < size.x(); ++x) {
-            Point2f pixelSample = Point2f((float)(x + offset.x()) + 0.5, (float)(y + offset.y()) + 0.5);
+            Vector2f pixelSample = Vector2f((float)(x + offset.x()) + 0.5, (float)(y + offset.y()) + 0.5);
             //block.put(pixelSample, Color3f(0, 1, 0));
-            Point2f uv = Point2f(
+            Vector2f uv = Vector2f(
                 pixelSample.x() / (float)outputSize.x(),
                 pixelSample.y() / (float)outputSize.y()
             );

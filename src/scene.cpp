@@ -52,13 +52,13 @@ void Scene::loadOBJ(const std::string& filename) {
 			mat_ids[f] = shape.mesh.material_ids[f];
 			for (size_t v = 0; v < 3; v++) {
 				tinyobj::index_t idx = shapes[s].mesh.indices[3 * f + v];
-				vertices[f][v] = Point3f( // load vertex
+				vertices[f][v] = Vector3f( // load vertex
 					attrib.vertices[3 * idx.vertex_index + 0],
 					attrib.vertices[3 * idx.vertex_index + 1],
 					attrib.vertices[3 * idx.vertex_index + 2]
 				);
 				if (idx.normal_index >= 0) { // load normal
-					normals[f][v] = Normal3f(
+					normals[f][v] = Vector3f(
 						attrib.normals[3 * idx.normal_index + 0],
 						attrib.normals[3 * idx.normal_index + 1],
 						attrib.normals[3 * idx.normal_index + 2]
@@ -66,7 +66,7 @@ void Scene::loadOBJ(const std::string& filename) {
 				}
 				else throw PathTracerException("No normal data!");
 				if (idx.texcoord_index >= 0) { // load uv
-					uvs[f][v] = Point2f(
+					uvs[f][v] = Vector2f(
 						attrib.texcoords[2 * idx.texcoord_index + 0],
 						attrib.texcoords[2 * idx.texcoord_index + 1]
 					);
@@ -159,13 +159,13 @@ void Scene::loadXML(const std::string& filename) {
 
 	auto light_nodes = doc.children("light");
 	for (pugi::xml_node light_node : light_nodes) {
-		cout << light_node.attribute("mtlname").value() << endl;
+		//cout << light_node.attribute("mtlname").value() << endl;
 		const char* radiance_str = light_node.attribute("radiance").as_string();
 		float r = toFloat(std::strtok(const_cast<char*>(radiance_str), ","));
 		float g = toFloat(std::strtok(nullptr, ","));
 		float b = toFloat(std::strtok(nullptr, ","));
 		Vector3f radiance(r, g, b);
-		cout << radiance.toString() << endl;
+		//cout << radiance.toString() << endl;
 		// TODO: add light
 	}
 }

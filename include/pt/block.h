@@ -48,13 +48,13 @@ public:
     ~ImageBlock();
     
     /// Configure the offset of the block within the main image
-    void setOffset(const Point2i &offset) { m_offset = offset; }
+    void setOffset(const Vector2i &offset) { m_offset = offset; }
 
     /// Return the offset of the block within the main image
-    inline const Point2i &getOffset() const { return m_offset; }
+    inline const Vector2i &getOffset() const { return m_offset; }
     
     /// Configure the size of the block within the main image
-    void setSize(const Point2i &size) { m_size = size; }
+    void setSize(const Vector2i &size) { m_size = size; }
 
     /// Return the size of the block within the main image
     inline const Vector2i &getSize() const { return m_size; }
@@ -77,7 +77,7 @@ public:
     void clear() { setConstant(Color4f()); }
 
     /// Record a sample with the given position and radiance value
-    void put(const Point2f &pos, const Color3f &value);
+    void put(const Vector2f &pos, const Color3f &value);
 
     /**
      * \brief Merge another image block into this one
@@ -96,7 +96,7 @@ public:
     /// Return a human-readable string summary
     std::string toString() const;
 protected:
-    Point2i m_offset;
+    Vector2i m_offset;
     Vector2i m_size;
     int m_borderSize = 0;
     mutable tbb::mutex m_mutex;
@@ -135,7 +135,7 @@ public:
 protected:
     enum EDirection { ERight = 0, EDown, ELeft, EUp };
 
-    Point2i m_block;
+    Vector2i m_block;
     Vector2i m_numBlocks;
     Vector2i m_size;
     int m_blockSize;

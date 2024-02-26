@@ -16,7 +16,7 @@
 #include <iostream>
 #include <algorithm>
 #include <vector>
-#include <Eigen/Core>
+#include <Eigen/Dense>
 #include <tinyformat.h>
 
 
@@ -63,10 +63,10 @@ typedef TVector<float, 1>       Vector1f;
 typedef TVector<float, 2>       Vector2f;
 typedef TVector<float, 3>       Vector3f;
 typedef TVector<float, 4>       Vector4f;
-typedef TVector<double, 1>      Vector1d;
-typedef TVector<double, 2>      Vector2d;
-typedef TVector<double, 3>      Vector3d;
-typedef TVector<double, 4>      Vector4d;
+//typedef TVector<double, 1>      Vector1d;
+//typedef TVector<double, 2>      Vector2d;
+//typedef TVector<double, 3>      Vector3d;
+//typedef TVector<double, 4>      Vector4d;
 typedef TVector<int, 1>         Vector1i;
 typedef TVector<int, 2>         Vector2i;
 typedef TVector<int, 3>         Vector3i;

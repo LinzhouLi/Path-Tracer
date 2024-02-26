@@ -147,7 +147,7 @@ void Bitmap::savePNG(const std::string &filename) {
     delete[] rgb8;
 }
 
-Color3f Bitmap::sample(const Point2f& uv) const {
+Color3f Bitmap::sample(const Vector2f& uv) const {
     int x = clamp(int(uv.x() * cols()), 0, cols()),
         y = clamp(int(uv.y() * rows()), 0, rows());
     return coeff(y, x);

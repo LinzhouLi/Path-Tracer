@@ -6,9 +6,9 @@ namespace pt {
 
 class Mesh {
 public:
-    using TriVertex = std::array< Point3f, 3 >;
-    using TriNormal = std::array< Normal3f, 3 >;
-    using TriUV = std::array< Point2f, 3 >;
+    using TriVertex = std::array< Vector3f, 3 >;
+    using TriNormal = std::array< Vector3f, 3 >;
+    using TriUV = std::array< Vector2f, 3 >;
 
     Mesh(const std::string& name = "") : m_name(name) { }
 

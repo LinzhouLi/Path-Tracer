@@ -35,14 +35,14 @@ void ImageBlock::fromBitmap(const Bitmap &bitmap) {
             coeffRef(y, x) << bitmap.coeff(y, x), 1;
 }
 
-void ImageBlock::put(const Point2f &_pos, const Color3f &value) {
+void ImageBlock::put(const Vector2f &_pos, const Color3f &value) {
     if (!value.isValid()) {
         /* If this happens, go fix your code instead of removing this warning ;) */
         cerr << "Integrator: computed an invalid radiance value: " << value.toString() << endl;
         return;
     }
 
-    Point2f pos(
+    Vector2f pos(
         _pos.x() - 0.5f - (m_offset.x() - m_borderSize),
         _pos.y() - 0.5f - (m_offset.y() - m_borderSize)
     );
@@ -71,7 +71,7 @@ BlockGenerator::BlockGenerator(const Vector2i &size, int blockSize) : m_size(siz
     );
     m_blocksLeft = m_numBlocks.x() * m_numBlocks.y();
     m_direction = ERight;
-    m_block = Point2i(m_numBlocks / 2);
+    m_block = Vector2i(m_numBlocks / 2);
     m_stepsLeft = 1;
     m_numSteps = 1;
 }
@@ -82,7 +82,7 @@ bool BlockGenerator::next(ImageBlock &block) {
     if (m_blocksLeft == 0)
         return false;
 
-    Point2i pos = m_block * m_blockSize;
+    Vector2i pos = m_block * m_blockSize;
     block.setOffset(pos);
     block.setSize((m_size - pos).cwiseMin(Vector2i::Constant(m_blockSize)));
 

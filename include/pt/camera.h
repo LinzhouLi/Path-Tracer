@@ -1,11 +1,15 @@
 #pragma once
 
 #include <pt/vector.h>
+#include <pt/transform.h>
 
 namespace pt {
 
 class Camera {
 public:
+	const float near = 0.01f;
+	const float far = 1000.0f;
+
 	Camera(
 		const uint32_t& width = 1280,
 		const uint32_t& height = 720,
@@ -22,6 +26,8 @@ private:
 	Vector3f m_eye;
 	Vector3f m_lookat;
 	Vector3f m_up;
+
+	Transform m_sample2camera;
 };
 
 }
