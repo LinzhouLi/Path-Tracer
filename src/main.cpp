@@ -2,7 +2,9 @@
 #include <pt/gui.h>
 #include <pt/block.h>
 #include <pt/timer.h>
+#include <pt/scene.h>
 #include <pt/bitmap.h>
+#include <pt/material.h>
 #include <tbb/parallel_for.h>
 #include <tbb/blocked_range.h>
 #include <tbb/task_scheduler_init.h>
@@ -13,7 +15,7 @@ using namespace pt;
 static int threadCount = -1;
 static bool useGui = true;
 
-static Bitmap testBitmap;
+static Bitmap* testBitmap;
 static Vector2i outputSize(768, 768);
 
 static void renderBlock(ImageBlock& block) {
@@ -29,7 +31,7 @@ static void renderBlock(ImageBlock& block) {
                 pixelSample.x() / (float)outputSize.x(),
                 pixelSample.y() / (float)outputSize.y()
             );
-            block.put(pixelSample, testBitmap.sample(uv));
+            block.put(pixelSample, testBitmap->sample(uv));
         }
     }
 }
@@ -86,7 +88,10 @@ static void render() {
 
 int main(int argc, char **argv) {
     threadCount = tbb::task_scheduler_init::automatic;
-    testBitmap.load("D:/dataset/youtube/frames/0ORaAnJYROg/0001.jpg");
+
+    Scene scene;
+    scene.loadOBJ("D:/code/Rendering/Path-Tracer/scenes/bathroom/bathroom.obj");
+    testBitmap = scene.getMaterial("Rug")->getTexture();
 
     render();
 

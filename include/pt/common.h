@@ -37,6 +37,12 @@
 #define PLATFORM_WINDOWS
 #endif
 
+#ifdef PLATFORM_WINDOWS
+#define DIR_SEP '\\'
+#else
+#define DIR_SEP '/'
+#endif
+
 
 namespace pt {
 
@@ -107,9 +113,7 @@ class KDTree;
 class Emitter;
 struct EmitterQueryRecord;
 class Mesh;
-class NoriObject;
-class NoriObjectFactory;
-class NoriScreen;
+class Material;
 class PhaseFunction;
 class ReconstructionFilter;
 class Sampler;
