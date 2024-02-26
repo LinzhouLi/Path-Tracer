@@ -23,8 +23,8 @@ static void renderBlock(ImageBlock& block) {
     Vector2i size = block.getSize();
 
     block.clear();
-    for (int y = 0; y < size.y(); ++y) {
-        for (int x = 0; x < size.x(); ++x) {
+    for (uint32_t y = 0; y < size.y(); ++y) {
+        for (uint32_t x = 0; x < size.x(); ++x) {
             Point2f pixelSample = Point2f((float)(x + offset.x()) + 0.5, (float)(y + offset.y()) + 0.5);
             //block.put(pixelSample, Color3f(0, 1, 0));
             Point2f uv = Point2f(
@@ -90,6 +90,7 @@ int main(int argc, char **argv) {
     threadCount = tbb::task_scheduler_init::automatic;
 
     Scene scene;
+    scene.loadXML("D:/code/Rendering/Path-Tracer/scenes/veach-mis/veach-mis.xml");
     scene.loadOBJ("D:/code/Rendering/Path-Tracer/scenes/bathroom/bathroom.obj");
     testBitmap = scene.getMaterial("Rug")->getTexture();
 

@@ -5,18 +5,20 @@
 #include <pt/mesh.h>
 #include <pt/bitmap.h>
 #include <pt/material.h>
+#include <pt/camera.h>
 
+#include <pugixml.hpp>
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
 
 namespace pt {
 
 void Scene::loadOBJ(const std::string& filename) {
+	cout << "Reading a OBJ file from \"" << filename << "\" ..." << endl;
+
 	tinyobj::ObjReaderConfig reader_config;
 	reader_config.vertex_color = false; // no vertex color
 	tinyobj::ObjReader reader;
-
-	cout << "Reading a OBJ file from \"" << filename << "\" ..." << endl;
 
 	bool sucess = reader.ParseFromFile(filename, reader_config);
 
@@ -33,8 +35,8 @@ void Scene::loadOBJ(const std::string& filename) {
 		std::string meshName = shape.name;
 
 		// check triangle
-		std::vector<unsigned int>& faceVertNums = shape.mesh.num_face_vertices;
-		auto it = std::find_if(faceVertNums.begin(), faceVertNums.end(), [](int i) { return i != 3; });
+		std::vector<uint32_t>& faceVertNums = shape.mesh.num_face_vertices;
+		auto it = std::find_if(faceVertNums.begin(), faceVertNums.end(), [](uint32_t i) { return i != 3; });
 		if (it != faceVertNums.end())
 			throw PathTracerException("Contains non-triangle face! Only support OBJ file with triangle faces.");
 
@@ -43,10 +45,11 @@ void Scene::loadOBJ(const std::string& filename) {
 		std::vector<Mesh::TriVertex> vertices(numFaces);
 		std::vector<Mesh::TriNormal> normals(numFaces);
 		std::vector<Mesh::TriUV> uvs(numFaces);
-		std::vector<int> mat_ids(shape.mesh.material_ids);
+		std::vector<uint32_t> mat_ids(numFaces);
 
 		// per face data
 		for (size_t f = 0; f < numFaces; f++) {
+			mat_ids[f] = shape.mesh.material_ids[f];
 			for (size_t v = 0; v < 3; v++) {
 				tinyobj::index_t idx = shapes[s].mesh.indices[3 * f + v];
 				vertices[f][v] = Point3f( // load vertex
@@ -76,7 +79,7 @@ void Scene::loadOBJ(const std::string& filename) {
 		this->m_meshes.push_back(mesh);
 	}
 
-	cout << "Load " << this->m_meshes.size() << " meshes!" << endl;
+	cout << "Load " << this->m_meshes.size() << " mesh!" << endl;
 
 	// Loop over materials
 	for (size_t m = 0; m < materials.size(); m++) {
@@ -108,7 +111,63 @@ void Scene::loadOBJ(const std::string& filename) {
 		this->m_materials.push_back(material_);
 	}
 
-	cout << "Load " << this->m_materials.size() << " materials!" << endl;
+	cout << "Load " << this->m_materials.size() << " material!" << endl;
+}
+
+void Scene::loadXML(const std::string& filename) {
+	cout << "Reading a XML file from \"" << filename << "\" ..." << endl;
+
+	pugi::xml_document doc;
+	pugi::xml_parse_result result = doc.load_file(filename.c_str());
+
+	if (!result)
+		throw PathTracerException(result.description());
+
+	pugi::xml_node camera_node = doc.child("camera");
+
+	if (std::string(camera_node.attribute("type").value()) != "perspective")
+		throw PathTracerException("Only support perspective camera!");
+
+	pugi::xml_node camera_eye_node = camera_node.child("eye");
+	pugi::xml_node camera_lookat_node = camera_node.child("lookat");
+	pugi::xml_node camera_up_node = camera_node.child("up");
+
+	Vector3f eye(
+		camera_eye_node.attribute("x").as_float(),
+		camera_eye_node.attribute("y").as_float(),
+		camera_eye_node.attribute("z").as_float()
+	);
+
+	Vector3f lookat(
+		camera_lookat_node.attribute("x").as_float(),
+		camera_lookat_node.attribute("y").as_float(),
+		camera_lookat_node.attribute("z").as_float()
+	);
+
+	Vector3f up(
+		camera_up_node.attribute("x").as_float(),
+		camera_up_node.attribute("y").as_float(),
+		camera_up_node.attribute("z").as_float()
+	);
+
+	this->m_camera = new Camera(
+		camera_node.attribute("width").as_uint(),
+		camera_node.attribute("height").as_uint(),
+		camera_node.attribute("fovy").as_float(),
+		eye, lookat, up
+	);
+
+	auto light_nodes = doc.children("light");
+	for (pugi::xml_node light_node : light_nodes) {
+		cout << light_node.attribute("mtlname").value() << endl;
+		const char* radiance_str = light_node.attribute("radiance").as_string();
+		float r = toFloat(std::strtok(const_cast<char*>(radiance_str), ","));
+		float g = toFloat(std::strtok(nullptr, ","));
+		float b = toFloat(std::strtok(nullptr, ","));
+		Vector3f radiance(r, g, b);
+		cout << radiance.toString() << endl;
+		// TODO: add light
+	}
 }
 
 Mesh* Scene::getMesh(const std::string& mesh_name) {
@@ -123,14 +182,14 @@ Material* Scene::getMaterial(const std::string& material_name) {
 	return nullptr;
 }
 
-Mesh* Scene::getMesh(const int mesh_id) {
+Mesh* Scene::getMesh(const uint32_t mesh_id) {
 	if (mesh_id >= 0 && mesh_id < m_meshes.size())
 		return m_meshes[mesh_id];
 	else
 		throw PathTracerException("Invalid mesh index!");
 }
 
-Material* Scene::getMaterial(const int material_id) {
+Material* Scene::getMaterial(const uint32_t material_id) {
 	if (material_id >= 0 && material_id < m_materials.size())
 		return m_materials[material_id];
 	else

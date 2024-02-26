@@ -1,6 +1,9 @@
 {
     "files.associations": {
         "condition_variable": "cpp",
-        "thread": "cpp"
+        "thread": "cpp",
+        "*.expression": "cpp",
+        "alignedvector3": "cpp",
+        "fft": "cpp"
     }
 }

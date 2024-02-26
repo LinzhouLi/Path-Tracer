@@ -66,6 +66,8 @@ void Bitmap::loadEXR(const std::string &filename) {
 }
 
 void Bitmap::load(const std::string &filename) {
+    cout << "Reading an image from \"" << filename << "\" ..." << endl;
+
     int width, height, channel;
     uint8_t* rgb8 = stbi_load(filename.c_str(), &width, &height, &channel, 0);
 
@@ -73,12 +75,10 @@ void Bitmap::load(const std::string &filename) {
         throw PathTracerException(("Fail to load image file: \"" + filename + "\"!").c_str());
 
     resize(height, width);
-    cout << "Reading a " << cols() << "x" << rows() << " image file from \""
-         << filename << "\"" << endl;
 
     uint8_t* inp = rgb8;
-    for (int i = 0; i < rows(); ++i) {
-        for (int j = 0; j < cols(); ++j) {
+    for (uint32_t i = 0; i < rows(); ++i) {
+        for (uint32_t j = 0; j < cols(); ++j) {
             Color3f pixel(
                 (float)(inp[0]) / 255.f,
                 (float)(inp[1]) / 255.f,
@@ -129,8 +129,8 @@ void Bitmap::savePNG(const std::string &filename) {
 
     uint8_t *rgb8 = new uint8_t[3 * cols() * rows()];
     uint8_t *dst = rgb8;
-    for (int i = 0; i < rows(); ++i) {
-        for (int j = 0; j < cols(); ++j) {
+    for (uint32_t i = 0; i < rows(); ++i) {
+        for (uint32_t j = 0; j < cols(); ++j) {
             Color3f tonemapped = coeffRef(i, j).toSRGB();
             dst[0] = (uint8_t) clamp(255.f * tonemapped[0], 0.f, 255.f);
             dst[1] = (uint8_t) clamp(255.f * tonemapped[1], 0.f, 255.f);

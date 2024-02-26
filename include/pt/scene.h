@@ -16,7 +16,11 @@ public:
         for (auto p : m_materials) delete p;
     }
 
+    // Load mesh and material from OBJ file
     void loadOBJ(const std::string& filename);
+
+    // Load camera and light description from XML file
+    void loadXML(const std::string& filename);
 
     // Get mesh by name
     Mesh* getMesh(const std::string& mesh_name);
@@ -25,10 +29,10 @@ public:
     Material* getMaterial(const std::string& material_name);
 
     // Get mesh by index
-    Mesh* getMesh(const int mesh_id);
+    Mesh* getMesh(const uint32_t mesh_id);
 
     // Get material by index
-    Material* getMaterial(const int material_id);
+    Material* getMaterial(const uint32_t material_id);
 
 private:
     std::vector<Mesh*> m_meshes;
