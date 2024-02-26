@@ -54,7 +54,7 @@ Camera::Camera(
 	Eigen::Matrix4f ndc2pixel_mat = ndc2pixel_trans.matrix();
 
 	m_sample2camera.setMatrix((ndc2pixel_mat * projection_mat).inverse());
-
+	m_camera2world.setMatrix(camera2world_mat);
 
 	//cout << "###" << endl;
 	//Vector3f tmp(640.0f, 480.0f, 0.01f);
@@ -63,7 +63,12 @@ Camera::Camera(
 }
 
 Ray Camera::sampleRay(const Vector2f screen_pos) {
-	// TODO
+	Vector3f d(screen_pos.x(), screen_pos.y(), 0.5f);
+	d = m_sample2camera.apply(d, Transform::Type::Scaler);
+	d = d.normalized();
+	float inv_z = 1.0 / d.z();
+	d = m_camera2world.apply(d, Transform::Type::Vector);
+	return Ray(m_eye, d, near * inv_z, far * inv_z);
 }
 
 };

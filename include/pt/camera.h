@@ -33,6 +33,7 @@ private:
 	Vector3f m_up;
 
 	Transform m_sample2camera;
+	Transform m_camera2world;
 };
 
 }

@@ -5,7 +5,7 @@
 *.slo
 *.lo
 *.o
-*.obj
+# *.obj # mesh file
 
 # Precompiled Headers
 *.gch
