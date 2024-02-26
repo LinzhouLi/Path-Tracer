@@ -2,6 +2,7 @@
 
 #include <pt/vector.h>
 #include <pt/transform.h>
+#include <pt/ray.h>
 
 namespace pt {
 
@@ -18,6 +19,10 @@ public:
 		const Vector3f& lookat = Vector3f(0.0f),
 		const Vector3f& up = Vector3f(0.0f, 1.0f, 0.0f)
 	);
+
+	Vector2i getScreenSize() { return Vector2i(m_width, m_height); }
+
+	Ray sampleRay(const Vector2f screen_pos);
 
 private:
 	uint32_t m_width, m_height;

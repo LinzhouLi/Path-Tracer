@@ -43,9 +43,11 @@ Camera::Camera(
 	const Vector3f& lookat,
 	const Vector3f& up
 ) : m_width(width), m_height(height), m_fovy(fovy), m_eye(eye), m_lookat(lookat), m_up(up) {
+
 	float aspect = width / height;
 	Eigen::Matrix4f camera2world_mat = computeCameraToWorldMatrix(eye, lookat, up);
 	Eigen::Matrix4f projection_mat = computeProjectionMatrix(aspect * fovy, fovy, float(width), float(height), near, far);
+
 	Eigen::Affine3f ndc2pixel_trans = Eigen::Affine3f::Identity();
 	ndc2pixel_trans.translate(Eigen::Vector3f(0.5 * float(width), 0.5 * float(height), 0.0));
 	ndc2pixel_trans.scale(Eigen::Vector3f(0.5 * float(width), 0.5 * float(height), 1.0));
@@ -53,11 +55,15 @@ Camera::Camera(
 
 	m_sample2camera.setMatrix((ndc2pixel_mat * projection_mat).inverse());
 
-	Vector3f tmp(640.0f, 480.0f, 0.01f);
 
-	cout << "###" << endl;
-	cout << m_sample2camera.apply(tmp, Transform::Type::Scaler).normalized() << endl;
-	cout << "###" << endl;
+	//cout << "###" << endl;
+	//Vector3f tmp(640.0f, 480.0f, 0.01f);
+	//cout << m_sample2camera.apply(tmp, Transform::Type::Scaler).normalized() << endl;
+	//cout << "###" << endl;
+}
+
+Ray Camera::sampleRay(const Vector2f screen_pos) {
+	// TODO
 }
 
 };
