@@ -27,7 +27,7 @@ static void renderBlock(Scene* scene, ImageBlock& block) {
     block.clear();
     for (uint32_t y = 0; y < size.y(); ++y) {
         for (uint32_t x = 0; x < size.x(); ++x) {
-            Vector2f pixelSample = Vector2f((float)(x + offset.x()) + 0.5, (float)(y + offset.y()) + 0.5);
+            Vector2f pixelSample = Vector2f(float(x + offset.x()) + 0.5, float(y + offset.y()) + 0.5);
 
             Ray ray = scene->getCamera()->sampleRay(pixelSample);
             Color3f value = scene->getIntegrator()->Li(scene, ray);

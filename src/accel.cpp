@@ -13,8 +13,7 @@ void Accel::addMesh(Mesh* mesh) {
 }
 
 void Accel::build() {
-    // TODO
-    cout << "Build accelration!" << endl;
+    cout << "Brute force search. No accelration!" << endl;
 }
 
 bool Accel::rayIntersect(const Ray& ray, Intersaction& its) {
@@ -36,6 +35,14 @@ bool Accel::rayIntersect(const Ray& ray, Intersaction& its) {
     }
 
     return intersect;
+}
+
+void BVHTree::build() {
+    cout << "Build BVH tree for accelration!" << endl;
+}
+
+bool BVHTree::rayIntersect(const Ray& ray, Intersaction& its) {
+
 }
     
 }

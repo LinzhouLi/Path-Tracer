@@ -8,12 +8,19 @@ class Accel {
 public:
 	void addMesh(Mesh* mesh);
 
-	void build();
+	virtual void build();
 
-	bool rayIntersect(const Ray& ray, Intersaction& its);
+	virtual bool rayIntersect(const Ray& ray, Intersaction& its);
 
 private:
 	Mesh* m_mesh = nullptr;
+};
+
+class BVHTree : public Accel {
+public:
+	void build();
+
+	bool rayIntersect(const Ray& ray, Intersaction& its);
 };
 
 }
