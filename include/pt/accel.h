@@ -4,6 +4,7 @@
 
 namespace pt {
 
+// Brute force method
 class Accel {
 public:
 	void addMesh(Mesh* mesh);
@@ -12,15 +13,19 @@ public:
 
 	virtual bool rayIntersect(const Ray& ray, Intersaction& its);
 
-private:
+protected:
 	Mesh* m_mesh = nullptr;
 };
 
+// BVH tree accelration
 class BVHTree : public Accel {
 public:
 	void build();
 
 	bool rayIntersect(const Ray& ray, Intersaction& its);
+
+private:
+	std::vector<AABB> aabbs;
 };
 
 }

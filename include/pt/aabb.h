@@ -13,6 +13,7 @@ public:
 		m_max = Vector3f(std::numeric_limits<float>::lowest());
 	}
 
+	// Initialize AABB from another
 	AABB(const AABB& b) : m_min(b.m_min), m_max(b.m_max) { }
 
 	// Initialize AABB with 1 vector

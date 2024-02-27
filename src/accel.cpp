@@ -3,6 +3,7 @@
 #include <pt/accel.h>
 #include <pt/mesh.h>
 #include <pt/ray.h>
+#include <pt/aabb.h>
 
 namespace pt {
 
@@ -38,7 +39,17 @@ bool Accel::rayIntersect(const Ray& ray, Intersaction& its) {
 }
 
 void BVHTree::build() {
-    cout << "Build BVH tree for accelration!" << endl;
+    cout << "Building BVH tree for accelration ..." << endl;
+    uint32_t numTriangles = m_mesh->getTriangleCount();
+    aabbs.resize(numTriangles);
+
+    std::vector<int> triangleIndices;
+    for (uint32_t i = 0; i < numTriangles; i++) {
+        triangleIndices.push_back(i);
+        const Mesh::TriVertex& triangle = m_mesh->getTriangle(i);
+        AABB aabb(triangle[0], triangle[1], triangle[2]);
+        aabbs[i] = aabb;
+    }
 }
 
 bool BVHTree::rayIntersect(const Ray& ray, Intersaction& its) {
