@@ -1,6 +1,6 @@
 #pragma once
 
-#include <pt/common.h>
+#include <pt/vector.h>
 
 namespace pt {
 
@@ -24,6 +24,8 @@ public:
 
     size_t getTriangleCount() { return m_tri_vertices.size(); }
 
+    const TriVertex& getTriangle(uint32_t i) { return m_tri_vertices[i]; }
+
 private:
     std::string m_name;
 
@@ -32,5 +34,9 @@ private:
     std::vector<TriUV> m_tri_uvs;
     std::vector<uint32_t> m_mat_ids;
 };
+
+float triangleSurfaceArea(const Mesh::TriVertex& triangle);
+
+bool rayTriangleIntersect(const Mesh::TriVertex& triangle, const Ray& ray, float& u, float& v, float& t);
 
 }

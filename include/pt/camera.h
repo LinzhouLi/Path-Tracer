@@ -1,15 +1,14 @@
 #pragma once
 
-#include <pt/vector.h>
+#include <pt/common.h>
 #include <pt/transform.h>
-#include <pt/ray.h>
 
 namespace pt {
 
 class Camera {
 public:
-	const float near = 0.01f;
-	const float far = 1000.0f;
+	const float c_near = 0.01f;
+	const float c_far = 1000.0f;
 
 	Camera(
 		const uint32_t& width = 1280,

@@ -46,7 +46,7 @@ Camera::Camera(
 
 	float aspect = width / height;
 	Eigen::Matrix4f camera2world_mat = computeCameraToWorldMatrix(eye, lookat, up);
-	Eigen::Matrix4f projection_mat = computeProjectionMatrix(aspect * fovy, fovy, float(width), float(height), near, far);
+	Eigen::Matrix4f projection_mat = computeProjectionMatrix(aspect * fovy, fovy, float(width), float(height), c_near, c_far);
 
 	Eigen::Affine3f ndc2pixel_trans = Eigen::Affine3f::Identity();
 	ndc2pixel_trans.translate(Eigen::Vector3f(0.5 * float(width), 0.5 * float(height), 0.0));
@@ -68,7 +68,7 @@ Ray Camera::sampleRay(const Vector2f screen_pos) {
 	d = d.normalized();
 	float inv_z = 1.0 / d.z();
 	d = m_camera2world.apply(d, Transform::Type::Vector);
-	return Ray(m_eye, d, near * inv_z, far * inv_z);
+	return Ray(m_eye, d, c_near * inv_z, c_far * inv_z);
 }
 
 };

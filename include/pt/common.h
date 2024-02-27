@@ -95,13 +95,9 @@ typedef TBoundingBox<Point1i>   BoundingBox1i;
 typedef TBoundingBox<Point2i>   BoundingBox2i;
 typedef TBoundingBox<Point3i>   BoundingBox3i;
 typedef TBoundingBox<Point4i>   BoundingBox4i;
-typedef TRay<Point2f, Vector2f> Ray2f;
-typedef TRay<Point3f, Vector3f> Ray3f;
-
-typedef Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> MatrixXf;
-typedef Eigen::Matrix<uint32_t, Eigen::Dynamic, Eigen::Dynamic> MatrixXu;
 
 /// Some more forward declarations
+class Ray;
 class Accel;
 class BSDF;
 class Bitmap;
@@ -118,6 +114,7 @@ class PhaseFunction;
 class ReconstructionFilter;
 class Sampler;
 class Scene;
+class Transform;
 
 
 /// Import cout, cerr, endl for debugging purposes

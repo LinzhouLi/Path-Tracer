@@ -6,6 +6,8 @@
 #include <pt/bitmap.h>
 #include <pt/material.h>
 #include <pt/camera.h>
+#include <pt/accel.h>
+#include <pt/integrator.h>
 
 #include <pugixml.hpp>
 #define TINYOBJLOADER_IMPLEMENTATION
@@ -194,6 +196,17 @@ Material* Scene::getMaterial(const uint32_t material_id) {
 		return m_materials[material_id];
 	else
 		throw PathTracerException("Invalid material index!");
+}
+
+void Scene::preprocess() {
+	// build accelration
+	m_accel = new Accel();
+	for (auto mesh : m_meshes) m_accel->addMesh(mesh);
+	m_accel->build();
+
+	// build Integrator
+	m_integrator = new GeometryIntegrator();
+	m_integrator->preprocess(this);
 }
 
 }

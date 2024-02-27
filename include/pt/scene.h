@@ -1,6 +1,7 @@
 #pragma once
 
 #include <pt/common.h>
+#include <pt/accel.h>
 
 namespace pt {
 
@@ -22,6 +23,12 @@ public:
     // Load camera and light description from XML file
     void loadXML(const std::string& filename);
 
+    // Get camera
+    Camera* getCamera() { return m_camera; }
+
+    // Get integrator
+    Integrator* getIntegrator() { return m_integrator; }
+
     // Get mesh by name
     Mesh* getMesh(const std::string& mesh_name);
 
@@ -33,6 +40,14 @@ public:
 
     // Get material by index
     Material* getMaterial(const uint32_t material_id);
+
+    // Ray intersect with scene (use accelration struction)
+    bool rayIntersect(const Ray& ray) const {
+        return m_accel->rayIntersect(ray);
+    }
+
+    // Build accelration struction and integrator
+    void preprocess();
 
 private:
     std::vector<Mesh*> m_meshes;

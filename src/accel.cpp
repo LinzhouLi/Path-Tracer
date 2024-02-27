@@ -1,0 +1,35 @@
+#pragma once
+
+#include <pt/accel.h>
+#include <pt/mesh.h>
+#include <pt/ray.h>
+
+namespace pt {
+
+void Accel::addMesh(Mesh* mesh) {
+    if (m_mesh)
+        throw PathTracerException("Accel: only a single mesh is supported!");
+    m_mesh = mesh;
+}
+
+void Accel::build() {
+    // TODO
+    cout << "Build accelration!" << endl;
+}
+
+bool Accel::rayIntersect(const Ray& ray) {
+    bool intersect = false;
+    Ray ray_(ray);
+
+    for (uint32_t idx = 0; idx < m_mesh->getTriangleCount(); ++idx) {
+        float u, v, t;
+        if (rayTriangleIntersect(m_mesh->getTriangle(idx), ray_, u, v, t)) {
+            ray_.max_dis = t; // find nearest intersection point
+            intersect = true;
+        }
+    }
+
+    return intersect;
+}
+    
+}
