@@ -16,10 +16,14 @@
 
 namespace pt {
 
+#define PIXEL_RATIO 1.75 // fix pixel ratio problem
+
 GUI::GUI(const ImageBlock &block) : 
-    nanogui::Screen(nanogui::Vector2i(block.getSize().x(), block.getSize().y() + 36), "PathTracer", false), 
-    m_block(block) 
-{
+    nanogui::Screen(
+        nanogui::Vector2i(block.getSize().x() / PIXEL_RATIO, (block.getSize().y() + 36) / PIXEL_RATIO), 
+        "PathTracer", false
+    ), m_block(block) {
+
     using namespace nanogui;
     inc_ref();
 

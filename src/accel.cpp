@@ -42,7 +42,7 @@ void BVHTree::build() {
 }
 
 bool BVHTree::rayIntersect(const Ray& ray, Intersaction& its) {
-
+    return true;
 }
     
 }
