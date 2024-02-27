@@ -23,13 +23,14 @@ Eigen::Matrix4f computeCameraToWorldMatrix(const Vector3f& eye, const Vector3f& 
 	return cameraToWorld;
 }
 
-Eigen::Matrix4f computeProjectionMatrix(float fovx, float fovy, float width, float height, float near, float far) {
-	float fx = fov2focal(fovx, width);
-	float fy = fov2focal(fovy, height);
+Eigen::Matrix4f computeProjectionMatrix(float aspect, float fovy, float near, float far) {
+	float fovx = fovy * aspect;
+	float cotx = 1.0f / std::tan(deg2rad(0.5 * fovx));
+	float coty = 1.0f / std::tan(deg2rad(0.5 * fovy));
 	Eigen::Matrix4f projection;
 	projection <<
-		2.0 * fx / width,  0.0, 0.0, 0.0,
-		0.0, 2.0 * fy / height, 0.0, 0.0,
+		cotx, 0.0, 0.0, 0.0,
+		0.0, coty, 0.0, 0.0,
 		0.0, 0.0, far / (far - near), -(far * near) / (far - near),
 		0.0, 0.0, 1.0, 0.0;
 	return projection;
@@ -44,22 +45,17 @@ Camera::Camera(
 	const Vector3f& up
 ) : m_width(width), m_height(height), m_fovy(fovy), m_eye(eye), m_lookat(lookat), m_up(up) {
 
-	float aspect = width / height;
+	float aspect = float(width) / float(height); // caution: integer divide!
 	Eigen::Matrix4f camera2world_mat = computeCameraToWorldMatrix(eye, lookat, up);
-	Eigen::Matrix4f projection_mat = computeProjectionMatrix(aspect * fovy, fovy, float(width), float(height), c_near, c_far);
+	Eigen::Matrix4f projection_mat = computeProjectionMatrix(aspect, fovy, c_near, c_far);
 
 	Eigen::Affine3f ndc2pixel_trans = Eigen::Affine3f::Identity();
 	ndc2pixel_trans.translate(Eigen::Vector3f(0.5 * float(width), 0.5 * float(height), 0.0));
-	ndc2pixel_trans.scale(Eigen::Vector3f(0.5 * float(width), 0.5 * float(height), 1.0));
+	ndc2pixel_trans.scale(Eigen::Vector3f(-0.5 * float(width), -0.5 * float(height), 1.0));
 	Eigen::Matrix4f ndc2pixel_mat = ndc2pixel_trans.matrix();
 
 	m_sample2camera.setMatrix((ndc2pixel_mat * projection_mat).inverse());
 	m_camera2world.setMatrix(camera2world_mat);
-
-	//cout << "###" << endl;
-	//Vector3f tmp(640.0f, 480.0f, 0.01f);
-	//cout << m_sample2camera.apply(tmp, Transform::Type::Scaler).normalized() << endl;
-	//cout << "###" << endl;
 }
 
 Ray Camera::sampleRay(const Vector2f screen_pos) {

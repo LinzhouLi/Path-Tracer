@@ -1,6 +1,7 @@
 #pragma once
 
 #include <pt/vector.h>
+#include <pt/common.h>
 
 namespace pt {
 
@@ -26,6 +27,12 @@ public:
 
     const TriVertex& getTriangle(uint32_t i) { return m_tri_vertices[i]; }
 
+    const TriNormal& getNormal(uint32_t i) { return m_tri_normals[i]; }
+
+    const TriUV& getUV(uint32_t i) { return m_tri_uvs[i]; }
+
+    const uint32_t& getMaterialId(uint32_t i) { return m_mat_ids[i]; }
+
 private:
     std::string m_name;
 
@@ -37,6 +44,23 @@ private:
 
 float triangleSurfaceArea(const Mesh::TriVertex& triangle);
 
-bool rayTriangleIntersect(const Mesh::TriVertex& triangle, const Ray& ray, float& u, float& v, float& t);
+bool rayTriangleIntersect(const Mesh::TriVertex& triangle, const Ray& ray, Vector3f& bary, float& t);
+
+class Intersaction {
+public:
+    void setInfo(Mesh* mesh, uint32_t triangle_idx, const Vector3f& bary);
+
+    void complete();
+
+    Vector3f pos;
+    Vector3f normal;
+    Vector2f uv;
+    uint32_t mat_id;
+
+private:
+    Mesh* m_mesh;
+    uint32_t m_triangle_idx;
+    Vector3f m_bary;
+};
 
 }

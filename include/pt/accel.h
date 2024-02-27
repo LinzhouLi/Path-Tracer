@@ -10,7 +10,7 @@ public:
 
 	void build();
 
-	bool rayIntersect(const Ray& ray);
+	bool rayIntersect(const Ray& ray, Intersaction& its);
 
 private:
 	Mesh* m_mesh = nullptr;

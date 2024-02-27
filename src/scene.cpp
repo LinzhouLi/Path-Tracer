@@ -205,6 +205,7 @@ void Scene::preprocess() {
 	m_accel->build();
 
 	// build Integrator
+	//m_integrator = new BaseColorIntegrator();
 	m_integrator = new GeometryIntegrator();
 	m_integrator->preprocess(this);
 }

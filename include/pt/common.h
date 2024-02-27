@@ -105,6 +105,7 @@ class BlockGenerator;
 class Camera;
 class ImageBlock;
 class Integrator;
+class Intersaction;
 class KDTree;
 class Emitter;
 struct EmitterQueryRecord;

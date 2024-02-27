@@ -42,8 +42,8 @@ public:
     Material* getMaterial(const uint32_t material_id);
 
     // Ray intersect with scene (use accelration struction)
-    bool rayIntersect(const Ray& ray) const {
-        return m_accel->rayIntersect(ray);
+    bool rayIntersect(const Ray& ray, Intersaction& its) const {
+        return m_accel->rayIntersect(ray, its);
     }
 
     // Build accelration struction and integrator

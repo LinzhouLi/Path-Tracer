@@ -2,18 +2,31 @@
 
 #include <pt/color.h>
 #include <pt/scene.h>
+#include <pt/mesh.h>
+#include <pt/material.h>
 #include <pt/integrator.h>
 
 namespace pt {
 
-void GeometryIntegrator::preprocess(const Scene* scene) {
-	cout << "Build GeometryIntegrator!" << endl;
+Color3f GeometryIntegrator::Li(Scene* scene, const Ray& ray) const {
+	Intersaction its;
+	bool hit = scene->rayIntersect(ray, its);
+	if (hit) {
+		Vector3f n = its.normal;
+		n = n.cwiseAbs();
+		return Color3f(n.x(), n.y(), n.z());
+	}
+	else
+		return Color3f(1, 1, 1);
 }
 
-Color3f GeometryIntegrator::Li(const Scene* scene, const Ray& ray) const {
-	bool hit = scene->rayIntersect(ray);
-	if (hit)
-		return Color3f(0, 1, 0);
+Color3f BaseColorIntegrator::Li(Scene* scene, const Ray& ray) const {
+	Intersaction its;
+	bool hit = scene->rayIntersect(ray, its);
+	if (hit) {
+		Material* m = scene->getMaterial(its.mat_id);
+		return m->getBaseColor(its.uv);
+	}
 	else
 		return Color3f(1, 1, 1);
 }

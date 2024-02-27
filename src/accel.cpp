@@ -17,16 +17,22 @@ void Accel::build() {
     cout << "Build accelration!" << endl;
 }
 
-bool Accel::rayIntersect(const Ray& ray) {
+bool Accel::rayIntersect(const Ray& ray, Intersaction& its) {
     bool intersect = false;
+
     Ray ray_(ray);
 
     for (uint32_t idx = 0; idx < m_mesh->getTriangleCount(); ++idx) {
-        float u, v, t;
-        if (rayTriangleIntersect(m_mesh->getTriangle(idx), ray_, u, v, t)) {
+        Vector3f bary; float t;
+        if (rayTriangleIntersect(m_mesh->getTriangle(idx), ray_, bary, t)) {
             ray_.max_dis = t; // find nearest intersection point
             intersect = true;
+            its.setInfo(m_mesh, idx, bary);
         }
+    }
+
+    if (intersect) {
+        its.complete();
     }
 
     return intersect;

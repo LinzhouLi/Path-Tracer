@@ -1,6 +1,8 @@
 #pragma once
 
 #include <pt/common.h>
+#include <pt/vector.h>
+#include <pt/color.h>
 
 namespace pt {
 
@@ -28,6 +30,10 @@ public:
 	void setTexture(Bitmap* texture) { m_diffuse_texture = texture; }
 
 	Bitmap* getTexture() { return m_diffuse_texture; }
+
+	Color3f getBaseColor() { return Color3f(m_diffuse.x(), m_diffuse.y(), m_diffuse.z()); }
+
+	Color3f getBaseColor(const Vector2f& uv);
 
 private:
 	std::string m_name;
