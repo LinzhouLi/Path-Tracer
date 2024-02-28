@@ -60,7 +60,7 @@ void Scene::loadOBJ(const std::string& filename) {
 		size_t numFaces = faceVertNums.size();
 		for (size_t f = 0; f < numFaces; f++) {
 			mtl_ids.push_back(shape.mesh.material_ids[f] + this->m_materials.size()); // local mtl id -> global mtl id
-			for (size_t v = 0; v < 3; v++) {
+			for (size_t v : {0, 1, 2}) {
 				tinyobj::index_t idx = shapes[s].mesh.indices[3 * f + v];
 				vertex_ids.push_back(idx.vertex_index);
 				normal_ids.push_back(idx.normal_index);
@@ -202,7 +202,7 @@ void Scene::preprocess() {
 	createPrimitives();
 
 	// build accelration
-	m_accel = new Accel(&m_primitives);
+	m_accel = new BVHTree(&m_primitives);
 	m_accel->build();
 
 	// build Integrator

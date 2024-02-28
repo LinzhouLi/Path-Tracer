@@ -57,7 +57,7 @@ public:
 	}
 
 	// Check if AABB is empty
-	inline bool empty() const { m_max.x() < m_min.x(); }
+	inline bool empty() const { return m_max.x() < m_min.x(); }
 
 	// Center of AABB
 	inline Vector3f center() const { return (m_max + m_min) * 0.5; }
@@ -68,7 +68,28 @@ public:
 	inline float depth() const { return m_max.z() - m_min.z(); }
 
 	// Volume of AABB
-	inline float volume() const { return width() * height() * depth(); }
+	inline float volume() const {
+		if (empty()) return 0.0f;
+		return width() * height() * depth();
+	}
+
+	// Surface area of AABB
+	inline float surfaceArea() const {
+		if (empty()) return 0.0f;
+		float x = width(), y = height(), z = depth();
+		return 2 * (x * y + x * z + y * z);
+	}
+
+	Vector3f offset(Vector3f p) const {
+		Vector3f o = p - m_min;
+		if (m_max.x() > m_min.x())
+			o.x() /= m_max.x() - m_min.x();
+		if (m_max.y() > m_min.y())
+			o.y() /= m_max.y() - m_min.y();
+		if (m_max.z() > m_min.z())
+			o.z() /= m_max.z() - m_min.z();
+		return o;
+	}
 
 	// Check if point inside AABB
 	inline bool inside(const Vector3f& p) {
@@ -88,6 +109,13 @@ public:
 		if (m_max.y() < b.m_min.y()) return false;
 		if (m_max.z() < b.m_min.z()) return false;
 		return true;
+	}
+
+	inline uint32_t getMaxAxis() const {
+		float x = width(), y = height(), z = depth();
+		if (x >= y && x >= z) return 0;
+		if (y >= x && y >= z) return 0;
+		if (z >= x && z >= y) return 0;
 	}
 
 private:
