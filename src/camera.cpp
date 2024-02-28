@@ -2,6 +2,11 @@
 
 namespace pt {
 
+const float Camera::cnear = 0.01f;
+const float Camera::cfar = 1000.0f;
+const float Camera::sample_z = 0.5f;
+float Camera::proj_nume = 1.0f;
+
 inline float deg2rad(float value) { 
 	return value * (M_PI / 180.0f); 
 }
@@ -47,7 +52,7 @@ Camera::Camera(
 
 	float aspect = float(width) / float(height); // caution: integer divide!
 	Eigen::Matrix4f camera2world_mat = computeCameraToWorldMatrix(eye, lookat, up);
-	Eigen::Matrix4f projection_mat = computeProjectionMatrix(aspect, fovy, c_near, c_far);
+	Eigen::Matrix4f projection_mat = computeProjectionMatrix(aspect, fovy, Camera::cnear, Camera::cfar);
 
 	Eigen::Affine3f ndc2pixel_trans = Eigen::Affine3f::Identity();
 	ndc2pixel_trans.translate(Eigen::Vector3f(0.5 * float(width), 0.5 * float(height), 0.0));
@@ -56,15 +61,20 @@ Camera::Camera(
 
 	m_sample2camera.setMatrix((ndc2pixel_mat * projection_mat).inverse());
 	m_camera2world.setMatrix(camera2world_mat);
+
+	// for projecton correction
+	Vector3f tmp_sample(0.5f * width, 0.5f * height, Camera::sample_z);
+	tmp_sample = m_sample2camera.apply(tmp_sample, Transform::Type::Scaler);
+	Camera::proj_nume = 1.0 / tmp_sample.z();
 }
 
 Ray Camera::sampleRay(const Vector2f screen_pos) {
-	Vector3f d(screen_pos.x(), screen_pos.y(), 0.5f);
+	Vector3f d(screen_pos.x(), screen_pos.y(), Camera::sample_z);
 	d = m_sample2camera.apply(d, Transform::Type::Scaler);
-	d = d.normalized();
-	float inv_z = 1.0 / d.z();
+	d.normalize();
+	float proj = Camera::proj_nume / d.z(); // project to a plane
 	d = m_camera2world.apply(d, Transform::Type::Vector);
-	return Ray(m_eye, d, c_near * inv_z, c_far * inv_z);
+	return Ray(m_eye, d, Camera::cnear * proj, Camera::cfar * proj);
 }
 
 };

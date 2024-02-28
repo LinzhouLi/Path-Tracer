@@ -17,7 +17,7 @@ Color3f GeometryIntegrator::Li(Scene* scene, const Ray& ray) const {
 		return Color3f(n.x(), n.y(), n.z());
 	}
 	else
-		return Color3f(1, 1, 1);
+		return Color3f(0, 0, 0);
 }
 
 Color3f BaseColorIntegrator::Li(Scene* scene, const Ray& ray) const {
@@ -28,7 +28,7 @@ Color3f BaseColorIntegrator::Li(Scene* scene, const Ray& ray) const {
 		return m->getBaseColor(its.uv);
 	}
 	else
-		return Color3f(1, 1, 1);
+		return Color3f(0, 0, 0);
 }
 
 }

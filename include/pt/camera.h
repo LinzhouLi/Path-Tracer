@@ -7,8 +7,10 @@ namespace pt {
 
 class Camera {
 public:
-	const float c_near = 0.01f;
-	const float c_far = 1000.0f;
+	const static float cnear;
+	const static float cfar;
+	const static float sample_z;
+	static float proj_nume;
 
 	Camera(
 		const uint32_t& width = 1280,
