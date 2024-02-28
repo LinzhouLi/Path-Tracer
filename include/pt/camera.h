@@ -7,7 +7,7 @@ namespace pt {
 
 class Camera {
 public:
-	const static float cnear;
+	const static float cnear; // 'near' & 'far' are defined in somewhere else
 	const static float cfar;
 	const static float sample_z;
 	static float proj_nume;
