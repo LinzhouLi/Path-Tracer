@@ -20,7 +20,7 @@ bool Accel::rayIntersect(const Ray& ray, Intersaction& its) {
     for (uint32_t idx = 0; idx < m_primitives->size(); ++idx) {
         Triangle* primitive =  (*m_primitives)[idx];
         Vector3f bary; float t;
-        if (primitive->intersect(ray, bary, t)) {
+        if (primitive->intersect(ray_, bary, t)) {
             ray_.max_dis = t; // find nearest intersection point
             intersect = true;
             its.setInfo(primitive, bary);
