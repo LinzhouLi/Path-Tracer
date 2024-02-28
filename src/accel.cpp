@@ -5,6 +5,11 @@
 #include <pt/ray.h>
 #include <pt/aabb.h>
 #include <pt/shape.h>
+#include <pt/timer.h>
+
+#include <tbb/task_group.h>
+#include <tbb/task_scheduler_init.h>
+#include <thread>
 
 namespace pt {
 
@@ -35,7 +40,10 @@ bool Accel::rayIntersect(const Ray& ray, Intersaction& its) {
 }
 
 void BVHTree::build() {
-    cout << "Building BVH tree for accelration ..." << endl;
+    tbb::task_scheduler_init init(threadCount);
+    cout << "Building BVH tree for accelration ...";
+    cout.flush();
+    Timer timer;
 
     std::vector<AABB> prim_aabbs(m_primitives->size());
     std::vector<uint32_t> prim_ids(m_primitives->size());
@@ -46,6 +54,8 @@ void BVHTree::build() {
     }
 
     root = buildRecursive(prim_ids, prim_aabbs);
+
+    cout << "done. (took " << timer.elapsedString() << ")" << endl;
     cout << "BVH tree contains " << node_pool.size() << " nodes!" << endl;
 }
 
@@ -149,8 +159,17 @@ BVHTree::Node* BVHTree::buildRecursive(std::vector<uint32_t>& prim_ids, const st
     }
 
     // make interior node
-    Node* left_node = buildRecursive(std::vector<uint32_t>(prim_ids.begin(), mid), prim_aabbs);
-    Node* right_node = buildRecursive(std::vector<uint32_t>(mid, prim_ids.end()), prim_aabbs);
+    Node* left_node, * right_node;
+    if (prim_ids.size() > 128 * 1024) {
+        tbb::task_group tg;
+        tg.run([&] { left_node = buildRecursive(std::vector<uint32_t>(prim_ids.begin(), mid), prim_aabbs); });
+        tg.run([&] { right_node = buildRecursive(std::vector<uint32_t>(mid, prim_ids.end()), prim_aabbs); });
+        tg.wait();
+    }
+    else {
+        left_node = buildRecursive(std::vector<uint32_t>(prim_ids.begin(), mid), prim_aabbs);
+        right_node = buildRecursive(std::vector<uint32_t>(mid, prim_ids.end()), prim_aabbs);
+    }
 
     node->makeInterior(left_node, right_node, aabb);
     return node;

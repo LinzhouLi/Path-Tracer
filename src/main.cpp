@@ -14,7 +14,7 @@
 
 using namespace pt;
 
-static int threadCount = -1;
+//static int threadCount = -1;
 static bool useGui = true;
 
 //static Bitmap* testBitmap;
@@ -33,11 +33,6 @@ static void renderBlock(Scene* scene, ImageBlock& block) {
             Color3f value = scene->getIntegrator()->Li(scene, ray);
 
             block.put(pixelSample, value);
-            //Vector2f uv = Vector2f(
-            //    pixelSample.x() / (float)outputSize.x(),
-            //    pixelSample.y() / (float)outputSize.y()
-            //);
-            //block.put(pixelSample, testBitmap->sample(uv));
         }
     }
 }

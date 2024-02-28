@@ -46,6 +46,8 @@
 
 namespace pt {
 
+static int threadCount = -1;
+
 /* Forward declarations */
 struct Normal3f;
 struct Color3f;
