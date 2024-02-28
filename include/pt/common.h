@@ -76,7 +76,6 @@ typedef TVector<int, 4>         Vector4i;
 class AABB;
 class Ray;
 class Accel;
-class BSDF;
 class Bitmap;
 class BlockGenerator;
 class Camera;
@@ -84,11 +83,12 @@ class ImageBlock;
 class Integrator;
 class Intersaction;
 class BVHTree;
-class Mesh;
+class TriangleMesh;
 class Material;
 class Sampler;
 class Scene;
 class Transform;
+class Triangle;
 
 
 /// Import cout, cerr, endl for debugging purposes

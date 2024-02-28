@@ -1,7 +1,6 @@
 #pragma once
 
 #include <pt/common.h>
-#include <pt/accel.h>
 
 namespace pt {
 
@@ -15,6 +14,7 @@ public:
         delete m_integrator;
         for (auto p : m_meshes) delete p;
         for (auto p : m_materials) delete p;
+        for (auto p : m_primitives) delete p;
     }
 
     // Load mesh and material from OBJ file
@@ -30,27 +30,31 @@ public:
     Integrator* getIntegrator() { return m_integrator; }
 
     // Get mesh by name
-    Mesh* getMesh(const std::string& mesh_name);
+    TriangleMesh* getMesh(const std::string& mesh_name);
 
     // Get material by name
     Material* getMaterial(const std::string& material_name);
 
     // Get mesh by index
-    Mesh* getMesh(const uint32_t mesh_id);
+    TriangleMesh* getMesh(const uint32_t mesh_id);
 
     // Get material by index
     Material* getMaterial(const uint32_t material_id);
 
     // Ray intersect with scene (use accelration struction)
-    bool rayIntersect(const Ray& ray, Intersaction& its) const {
-        return m_accel->rayIntersect(ray, its);
-    }
+    bool rayIntersect(const Ray& ray, Intersaction& its) const;
 
-    // Build accelration struction and integrator
+    // Create primitives, build accelration struction and integrator
     void preprocess();
 
+    // Get primitives (editable)
+    std::vector<Triangle*>* getPrimitives() { return &m_primitives; }
+
 private:
-    std::vector<Mesh*> m_meshes;
+    void createPrimitives();
+
+    std::vector<Triangle*> m_primitives;
+    std::vector<TriangleMesh*> m_meshes;
     std::vector<Material*> m_materials;
 
     Integrator* m_integrator = nullptr;

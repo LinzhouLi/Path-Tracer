@@ -4,17 +4,12 @@
 #include <pt/mesh.h>
 #include <pt/ray.h>
 #include <pt/aabb.h>
+#include <pt/shape.h>
 
 namespace pt {
 
-void Accel::addMesh(Mesh* mesh) {
-    if (m_mesh)
-        throw PathTracerException("Accel: only a single mesh is supported!");
-    m_mesh = mesh;
-}
-
 void Accel::build() {
-    cout << "Brute force search. No accelration!" << endl;
+    cout << "Brute force intersection search. No accelration!" << endl;
 }
 
 bool Accel::rayIntersect(const Ray& ray, Intersaction& its) {
@@ -22,12 +17,13 @@ bool Accel::rayIntersect(const Ray& ray, Intersaction& its) {
 
     Ray ray_(ray);
 
-    for (uint32_t idx = 0; idx < m_mesh->getTriangleCount(); ++idx) {
+    for (uint32_t idx = 0; idx < m_primitives->size(); ++idx) {
+        Triangle* primitive =  (*m_primitives)[idx];
         Vector3f bary; float t;
-        if (rayTriangleIntersect(m_mesh->getTriangle(idx), ray_, bary, t)) {
+        if (primitive->intersect(ray, bary, t)) {
             ray_.max_dis = t; // find nearest intersection point
             intersect = true;
-            its.setInfo(m_mesh, idx, bary);
+            its.setInfo(primitive, bary);
         }
     }
 
@@ -40,15 +36,11 @@ bool Accel::rayIntersect(const Ray& ray, Intersaction& its) {
 
 void BVHTree::build() {
     cout << "Building BVH tree for accelration ..." << endl;
-    uint32_t numTriangles = m_mesh->getTriangleCount();
-    aabbs.resize(numTriangles);
+    aabbs.resize(m_primitives->size());
 
     std::vector<int> triangleIndices;
-    for (uint32_t i = 0; i < numTriangles; i++) {
-        triangleIndices.push_back(i);
-        const Mesh::TriVertex& triangle = m_mesh->getTriangle(i);
-        AABB aabb(triangle[0], triangle[1], triangle[2]);
-        aabbs[i] = aabb;
+    for (uint32_t i = 0; i < m_primitives->size(); i++) {
+        aabbs[i] = (*m_primitives)[i]->getAABB();
     }
 }
 

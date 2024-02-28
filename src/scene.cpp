@@ -8,6 +8,7 @@
 #include <pt/camera.h>
 #include <pt/accel.h>
 #include <pt/integrator.h>
+#include <pt/shape.h>
 
 #include <pugixml.hpp>
 #define TINYOBJLOADER_IMPLEMENTATION
@@ -31,10 +32,24 @@ void Scene::loadOBJ(const std::string& filename) {
 	const std::vector<tinyobj::shape_t>& shapes = reader.GetShapes();
 	const std::vector<tinyobj::material_t>& materials = reader.GetMaterials();
 
-	// Loop over shapes(meshes)
+	// vertex data
+	std::vector<Vector3f> vertices(attrib.vertices.size() / 3);
+	std::vector<Vector3f> normals(attrib.normals.size() / 3);
+	std::vector<Vector2f> uvs(attrib.texcoords.size() / 2);
+
+	for (size_t i = 0; i < vertices.size(); i++)
+		vertices[i] = Vector3f(attrib.vertices[3 * i], attrib.vertices[3 * i + 1], attrib.vertices[3 * i + 2]);
+	for (size_t i = 0; i < normals.size(); i++)
+		normals[i] = Vector3f(attrib.normals[3 * i], attrib.normals[3 * i + 1], attrib.normals[3 * i + 2]);
+	for (size_t i = 0; i < uvs.size(); i++)
+		uvs[i] = Vector2f(attrib.texcoords[2 * i], attrib.texcoords[2 * i + 1]);
+
+	// face data
+	std::vector<uint32_t> vertex_ids, normal_ids, uv_ids;
+	std::vector<uint32_t> mtl_ids;
+
 	for (size_t s = 0; s < shapes.size(); s++) {
 		tinyobj::shape_t shape = shapes[s];
-		std::string meshName = shape.name;
 
 		// check triangle
 		std::vector<uint32_t>& faceVertNums = shape.mesh.num_face_vertices;
@@ -42,46 +57,25 @@ void Scene::loadOBJ(const std::string& filename) {
 		if (it != faceVertNums.end())
 			throw PathTracerException("Contains non-triangle face! Only support OBJ file with triangle faces.");
 
-		// mesh attributes
 		size_t numFaces = faceVertNums.size();
-		std::vector<Mesh::TriVertex> vertices(numFaces);
-		std::vector<Mesh::TriNormal> normals(numFaces);
-		std::vector<Mesh::TriUV> uvs(numFaces);
-		std::vector<uint32_t> mat_ids(numFaces);
-
-		// per face data
 		for (size_t f = 0; f < numFaces; f++) {
-			mat_ids[f] = shape.mesh.material_ids[f];
+			mtl_ids.push_back(shape.mesh.material_ids[f] + this->m_materials.size()); // local mtl id -> global mtl id
 			for (size_t v = 0; v < 3; v++) {
 				tinyobj::index_t idx = shapes[s].mesh.indices[3 * f + v];
-				vertices[f][v] = Vector3f( // load vertex
-					attrib.vertices[3 * idx.vertex_index + 0],
-					attrib.vertices[3 * idx.vertex_index + 1],
-					attrib.vertices[3 * idx.vertex_index + 2]
-				);
-				if (idx.normal_index >= 0) { // load normal
-					normals[f][v] = Vector3f(
-						attrib.normals[3 * idx.normal_index + 0],
-						attrib.normals[3 * idx.normal_index + 1],
-						attrib.normals[3 * idx.normal_index + 2]
-					);
-				}
-				else throw PathTracerException("No normal data!");
-				if (idx.texcoord_index >= 0) { // load uv
-					uvs[f][v] = Vector2f(
-						attrib.texcoords[2 * idx.texcoord_index + 0],
-						attrib.texcoords[2 * idx.texcoord_index + 1]
-					);
-				}
-				else throw PathTracerException("No uv data!");
+				vertex_ids.push_back(idx.vertex_index);
+				normal_ids.push_back(idx.normal_index);
+				uv_ids.push_back(idx.texcoord_index);
 			}
 		}
-
-		Mesh* mesh = new Mesh(meshName, vertices, normals, uvs, mat_ids);
-		this->m_meshes.push_back(mesh);
 	}
 
-	cout << "Load " << this->m_meshes.size() << " mesh!" << endl;
+	TriangleMesh* mesh = new TriangleMesh(
+		filename, vertices, normals, uvs, 
+		vertex_ids, normal_ids, uv_ids, mtl_ids
+	);
+	this->m_meshes.push_back(mesh);
+
+	cout << "Load a mesh with " << mesh->getVertexCount() << " vertices and " << mesh->getTriangleCount() << " triangles!" << endl;
 
 	// Loop over materials
 	for (size_t m = 0; m < materials.size(); m++) {
@@ -113,7 +107,7 @@ void Scene::loadOBJ(const std::string& filename) {
 		this->m_materials.push_back(material_);
 	}
 
-	cout << "Load " << this->m_materials.size() << " material!" << endl;
+	cout << "Load " << this->m_materials.size() << " materials!" << endl;
 }
 
 void Scene::loadXML(const std::string& filename) {
@@ -172,8 +166,8 @@ void Scene::loadXML(const std::string& filename) {
 	}
 }
 
-Mesh* Scene::getMesh(const std::string& mesh_name) {
-	for (Mesh* mesh : m_meshes)
+TriangleMesh* Scene::getMesh(const std::string& mesh_name) {
+	for (TriangleMesh* mesh : m_meshes)
 		if (mesh->getName() == mesh_name) return mesh;
 	return nullptr;
 }
@@ -184,7 +178,7 @@ Material* Scene::getMaterial(const std::string& material_name) {
 	return nullptr;
 }
 
-Mesh* Scene::getMesh(const uint32_t mesh_id) {
+TriangleMesh* Scene::getMesh(const uint32_t mesh_id) {
 	if (mesh_id >= 0 && mesh_id < m_meshes.size())
 		return m_meshes[mesh_id];
 	else
@@ -198,16 +192,33 @@ Material* Scene::getMaterial(const uint32_t material_id) {
 		throw PathTracerException("Invalid material index!");
 }
 
+bool Scene::rayIntersect(const Ray& ray, Intersaction& its) const {
+	return m_accel->rayIntersect(ray, its);
+}
+
 void Scene::preprocess() {
+	// create primitives
+	Triangle::setMeshGroup(&m_meshes);
+	createPrimitives();
+
 	// build accelration
-	m_accel = new Accel();
-	for (auto mesh : m_meshes) m_accel->addMesh(mesh);
+	m_accel = new Accel(&m_primitives);
 	m_accel->build();
 
 	// build Integrator
 	//m_integrator = new BaseColorIntegrator();
 	m_integrator = new GeometryIntegrator();
 	m_integrator->preprocess(this);
+}
+
+void Scene::createPrimitives() {
+	uint32_t total_triangles = 0;
+	for (uint32_t i = 0; i < m_meshes.size(); i++) {
+		total_triangles += m_meshes[i]->getTriangleCount();
+		for (uint32_t j = 0; j < m_meshes[i]->getTriangleCount(); j++)
+			m_primitives.push_back(new Triangle(i, j));
+	}
+	cout << "Create " << total_triangles << " primitives!" << endl;
 }
 
 }

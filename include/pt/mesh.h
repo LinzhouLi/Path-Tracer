@@ -5,62 +5,63 @@
 
 namespace pt {
 
-class Mesh {
+class TriangleMesh {
 public:
-    using TriVertex = std::array< Vector3f, 3 >;
-    using TriNormal = std::array< Vector3f, 3 >;
-    using TriUV = std::array< Vector2f, 3 >;
+    TriangleMesh(const std::string& name = "") : m_name(name) { }
 
-    Mesh(const std::string& name = "") : m_name(name) { }
-
-    Mesh(
+    TriangleMesh(
         const std::string& name, 
-        const std::vector<TriVertex>& vertices,
-        const std::vector<TriNormal>& normals,
-        const std::vector<TriUV>& uvs,
-        const std::vector<uint32_t>& mat_ids
-    ) : m_name(name), m_tri_vertices(vertices), m_tri_normals(normals), m_tri_uvs(uvs), m_mat_ids(mat_ids){ }
+
+        const std::vector<Vector3f>& vertices,
+        const std::vector<Vector3f>& normals,
+        const std::vector<Vector2f>& uvs,
+
+        const std::vector<uint32_t>& vertex_ids,
+        const std::vector<uint32_t>& normal_ids,
+        const std::vector<uint32_t>& uv_ids,
+        const std::vector<uint32_t>& mtl_ids
+    ) : m_name(name), m_vertices(vertices), m_normals(normals), m_uvs(uvs), 
+        m_vertex_ids(vertex_ids), m_normal_ids(normal_ids) , m_uv_ids(uv_ids), m_mtl_ids(mtl_ids) { }
 
     std::string getName() { return m_name; }
 
-    size_t getTriangleCount() { return m_tri_vertices.size(); }
+    size_t getVertexCount() { return m_vertices.size(); }
 
-    const TriVertex& getTriangle(uint32_t i) { return m_tri_vertices[i]; }
+    size_t getTriangleCount() { return m_vertex_ids.size() / 3; }
 
-    const TriNormal& getNormal(uint32_t i) { return m_tri_normals[i]; }
+    void getVertex(uint32_t face_id, Vector3f& v0, Vector3f& v1, Vector3f& v2) {
+        v0 = m_vertices[m_vertex_ids[3 * face_id + 0]];
+        v1 = m_vertices[m_vertex_ids[3 * face_id + 1]];
+        v2 = m_vertices[m_vertex_ids[3 * face_id + 2]];
+    }
 
-    const TriUV& getUV(uint32_t i) { return m_tri_uvs[i]; }
+    bool getNormal(uint32_t face_id, Vector3f& n0, Vector3f& n1, Vector3f& n2) {
+        if (m_normal_ids[3 * face_id] < 0) return false;
+        n0 = m_normals[m_normal_ids[3 * face_id + 0]];
+        n1 = m_normals[m_normal_ids[3 * face_id + 1]];
+        n2 = m_normals[m_normal_ids[3 * face_id + 2]];
+        return true;
+    }
 
-    const uint32_t& getMaterialId(uint32_t i) { return m_mat_ids[i]; }
+    bool getUV(uint32_t face_id, Vector2f& uv0, Vector2f& uv1, Vector2f& uv2) {
+        if (m_uv_ids[3 * face_id] < 0) return false;
+        uv0 = m_uvs[m_uv_ids[3 * face_id + 0]];
+        uv1 = m_uvs[m_uv_ids[3 * face_id + 1]];
+        uv2 = m_uvs[m_uv_ids[3 * face_id + 2]];
+        return true;
+    }
+
+    uint32_t getMaterialId(uint32_t face_id) { return m_mtl_ids[face_id]; } 
 
 private:
     std::string m_name;
 
-    std::vector<TriVertex> m_tri_vertices;
-    std::vector<TriNormal> m_tri_normals;
-    std::vector<TriUV> m_tri_uvs;
-    std::vector<uint32_t> m_mat_ids;
-};
+    std::vector<Vector3f> m_vertices;
+    std::vector<Vector3f> m_normals;
+    std::vector<Vector2f> m_uvs;
 
-float triangleSurfaceArea(const Mesh::TriVertex& triangle);
-
-bool rayTriangleIntersect(const Mesh::TriVertex& triangle, const Ray& ray, Vector3f& bary, float& t);
-
-class Intersaction {
-public:
-    void setInfo(Mesh* mesh, uint32_t triangle_idx, const Vector3f& bary);
-
-    void complete();
-
-    Vector3f pos;
-    Vector3f normal;
-    Vector2f uv;
-    uint32_t mat_id;
-
-private:
-    Mesh* m_mesh;
-    uint32_t m_triangle_idx;
-    Vector3f m_bary;
+    std::vector<uint32_t> m_vertex_ids, m_normal_ids, m_uv_ids;
+    std::vector<uint32_t> m_mtl_ids;
 };
 
 }
