@@ -38,6 +38,10 @@ public:
 			right = r;
 			aabb = b;
 		}
+
+		inline bool isLeaf() const { 
+			return left == nullptr && right == nullptr; 
+		}
 	};
 
 	BVHTree(std::vector<Triangle*>* primitives) : Accel(primitives) { }

@@ -97,10 +97,9 @@ int main(int argc, char **argv) {
     threadCount = tbb::task_scheduler_init::automatic;
 
     Scene scene;
-    scene.loadOBJ("D:/code/Rendering/Path-Tracer/scenes/veach-mis/veach-mis.obj");
-    scene.loadXML("D:/code/Rendering/Path-Tracer/scenes/veach-mis/veach-mis.xml");
+    scene.loadOBJ("D:/code/Rendering/Path-Tracer/scenes/cornell-box/cornell-box.obj");
+    scene.loadXML("D:/code/Rendering/Path-Tracer/scenes/cornell-box/cornell-box.xml");
     scene.preprocess();
-    //testBitmap = scene.getMaterial("Rug")->getTexture();
 
     render(&scene);
 

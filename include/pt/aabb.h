@@ -80,6 +80,7 @@ public:
 		return 2 * (x * y + x * z + y * z);
 	}
 
+	// Offset a point to the AABB
 	Vector3f offset(Vector3f p) const {
 		Vector3f o = p - m_min;
 		if (m_max.x() > m_min.x())
@@ -111,12 +112,16 @@ public:
 		return true;
 	}
 
+	// Get the longest axis
 	inline uint32_t getMaxAxis() const {
 		float x = width(), y = height(), z = depth();
 		if (x >= y && x >= z) return 0;
 		if (y >= x && y >= z) return 0;
 		if (z >= x && z >= y) return 0;
 	}
+
+	// Ray-AABB intersection
+	bool intersect(const Ray& ray) const;
 
 private:
 	Vector3f m_min;
