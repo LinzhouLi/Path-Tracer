@@ -53,7 +53,7 @@ void BVHTree::build() {
         prim_ids[i] = i;
     }
 
-    root = buildRecursive(prim_ids, prim_aabbs);
+    root = buildRecursive(prim_ids.begin(), prim_ids.end(), prim_aabbs);
 
     cout << "done. (took " << timer.elapsedString() << ")" << endl;
     cout << "BVH tree contains " << node_pool.size() << " nodes!" << endl;
@@ -64,22 +64,28 @@ struct SplitBucket {
     AABB aabb;
 };
 
-BVHTree::Node* BVHTree::buildRecursive(std::vector<uint32_t>& prim_ids, const std::vector<AABB>& prim_aabbs) {
-    if (prim_ids.size() == 0)
+BVHTree::Node* BVHTree::buildRecursive(
+    std::vector<uint32_t>::iterator prim_ids_begin,
+    std::vector<uint32_t>::iterator prim_ids_end,
+    const std::vector<AABB>& prim_aabbs
+) {
+    if (prim_ids_end == prim_ids_begin)
         return nullptr;
 
+    auto prims_num = prim_ids_end - prim_ids_begin;
     Node* node = new Node();
     node_pool.push_back(node);
 
     // compute sub-tree aabb
     AABB aabb, centroid_aabb;
-    for (uint32_t idx : prim_ids) {
-        aabb += prim_aabbs[idx];
-        centroid_aabb += prim_aabbs[idx].center();
+    for (auto iter = prim_ids_begin; iter != prim_ids_end; iter++) {
+        uint32_t prim_idx = *iter;
+        aabb += prim_aabbs[prim_idx];
+        centroid_aabb += prim_aabbs[prim_idx].center();
     }
 
-    if (prim_ids.size() == 1 || aabb.surfaceArea() == 0.0) {
-        node->makeLeaf(prim_ids, aabb);
+    if (prims_num == 1 || aabb.surfaceArea() == 0.0) {
+        node->makeLeaf(prim_ids_begin, prim_ids_end, aabb);
         return node;
     }
 
@@ -87,10 +93,10 @@ BVHTree::Node* BVHTree::buildRecursive(std::vector<uint32_t>& prim_ids, const st
     uint32_t axis = centroid_aabb.getMaxAxis();
     std::vector<uint32_t>::iterator mid;
 
-    if (prim_ids.size() <= 2) {
-        mid = prim_ids.begin() + prim_ids.size() / 2;
+    if (prims_num <= 2) {
+        mid = prim_ids_begin + prims_num / 2;
         std::nth_element( // partial sort
-            prim_ids.begin(), mid, prim_ids.end(),
+            prim_ids_begin, mid, prim_ids_end,
             [&](uint32_t a, uint32_t b) {
 				return prim_aabbs[a].center()[axis] < prim_aabbs[b].center()[axis];
 			}
@@ -100,7 +106,8 @@ BVHTree::Node* BVHTree::buildRecursive(std::vector<uint32_t>& prim_ids, const st
         // initialze buckets
         constexpr int num_buckets = 12;
         SplitBucket buckets[num_buckets];
-        for (uint32_t prim_idx : prim_ids) {
+        for (auto iter = prim_ids_begin; iter != prim_ids_end; iter++) {
+            uint32_t prim_idx = *iter;
             int b_idx = num_buckets * centroid_aabb.offset(prim_aabbs[prim_idx].center())[axis]; // which bucket?
             if (b_idx == num_buckets) b_idx = num_buckets - 1;
             buckets[b_idx].count++;
@@ -141,15 +148,15 @@ BVHTree::Node* BVHTree::buildRecursive(std::vector<uint32_t>& prim_ids, const st
         min_cost = 0.5f + min_cost / aabb.surfaceArea();
 
         // make leaf node
-        float leaf_cost = prim_ids.size();
+        float leaf_cost = prims_num * 1.0;
         if (leaf_cost < min_cost) {
-            node->makeLeaf(prim_ids, aabb);
+            node->makeLeaf(prim_ids_begin, prim_ids_end, aabb);
             return node;
         }
 
         // partition by split_idx
         mid = std::partition(
-            prim_ids.begin(), prim_ids.end(),
+            prim_ids_begin, prim_ids_end,
             [=](uint32_t prim_idx) {
                 int b_idx = num_buckets * centroid_aabb.offset(prim_aabbs[prim_idx].center())[axis]; // which bucket?
                 if (b_idx == num_buckets) b_idx = num_buckets - 1;
@@ -160,15 +167,15 @@ BVHTree::Node* BVHTree::buildRecursive(std::vector<uint32_t>& prim_ids, const st
 
     // make interior node
     Node* left_node, * right_node;
-    if (prim_ids.size() > 128 * 1024) {
+    if (prims_num > 128 * 1024) {
         tbb::task_group tg;
-        tg.run([&] { left_node = buildRecursive(std::vector<uint32_t>(prim_ids.begin(), mid), prim_aabbs); });
-        tg.run([&] { right_node = buildRecursive(std::vector<uint32_t>(mid, prim_ids.end()), prim_aabbs); });
+        tg.run([&] { left_node = buildRecursive(prim_ids_begin, mid, prim_aabbs); });
+        tg.run([&] { right_node = buildRecursive(mid, prim_ids_end, prim_aabbs); });
         tg.wait();
     }
     else {
-        left_node = buildRecursive(std::vector<uint32_t>(prim_ids.begin(), mid), prim_aabbs);
-        right_node = buildRecursive(std::vector<uint32_t>(mid, prim_ids.end()), prim_aabbs);
+        left_node = buildRecursive(prim_ids_begin, mid, prim_aabbs);
+        right_node = buildRecursive(mid, prim_ids_end, prim_aabbs);
     }
 
     node->makeInterior(left_node, right_node, aabb);

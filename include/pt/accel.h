@@ -28,8 +28,12 @@ public:
 		Node* right = nullptr;
 		std::vector<uint32_t> prim_ids;
 
-		void makeLeaf(const std::vector<uint32_t>& ids, const AABB& b) {
-			prim_ids = ids;
+		void makeLeaf(
+			std::vector<uint32_t>::iterator prim_ids_begin,
+			std::vector<uint32_t>::iterator prim_ids_end, 
+			const AABB& b
+		) {
+			prim_ids = std::vector<uint32_t>(prim_ids_begin, prim_ids_end);
 			aabb = b;
 		}
 
@@ -55,7 +59,11 @@ public:
 	bool rayIntersect(const Ray& ray, Intersection& its);
 
 private:
-	Node* buildRecursive(std::vector<uint32_t>& primitiveIndices, const std::vector<AABB>& prim_aabbs);
+	Node* buildRecursive(
+		std::vector<uint32_t>::iterator prim_ids_begin, 
+		std::vector<uint32_t>::iterator prim_ids_end,
+		const std::vector<AABB>& prim_aabbs
+	);
 
 	Node* root = nullptr;
 	std::vector<Node*> node_pool;
