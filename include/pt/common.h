@@ -83,7 +83,7 @@ class BlockGenerator;
 class Camera;
 class ImageBlock;
 class Integrator;
-class Intersaction;
+class Intersection;
 class BVHTree;
 class TriangleMesh;
 class Material;

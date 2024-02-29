@@ -9,7 +9,7 @@
 namespace pt {
 
 Color3f GeometryIntegrator::Li(Scene* scene, const Ray& ray) const {
-	Intersaction its;
+	Intersection its;
 	bool hit = scene->rayIntersect(ray, its);
 	if (hit) {
 		Vector3f n = its.sha_n;
@@ -21,7 +21,7 @@ Color3f GeometryIntegrator::Li(Scene* scene, const Ray& ray) const {
 }
 
 Color3f BaseColorIntegrator::Li(Scene* scene, const Ray& ray) const {
-	Intersaction its;
+	Intersection its;
 	bool hit = scene->rayIntersect(ray, its);
 	if (hit) {
 		Material* m = scene->getMaterial(its.getShape()->getMaterialId());

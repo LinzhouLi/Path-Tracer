@@ -42,7 +42,7 @@ public:
     Material* getMaterial(const uint32_t material_id);
 
     // Ray intersect with scene (use accelration struction)
-    bool rayIntersect(const Ray& ray, Intersaction& its) const;
+    bool rayIntersect(const Ray& ray, Intersection& its) const;
 
     // Create primitives, build accelration struction and integrator
     void preprocess();

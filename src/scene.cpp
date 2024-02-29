@@ -192,7 +192,7 @@ Material* Scene::getMaterial(const uint32_t material_id) {
 		throw PathTracerException("Invalid material index!");
 }
 
-bool Scene::rayIntersect(const Ray& ray, Intersaction& its) const {
+bool Scene::rayIntersect(const Ray& ray, Intersection& its) const {
 	return m_accel->rayIntersect(ray, its);
 }
 

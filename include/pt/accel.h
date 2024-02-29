@@ -12,7 +12,7 @@ public:
 
 	virtual void build();
 
-	virtual bool rayIntersect(const Ray& ray, Intersaction& its);
+	virtual bool rayIntersect(const Ray& ray, Intersection& its);
 
 protected:
 	std::vector<Triangle*>* m_primitives;
@@ -52,7 +52,7 @@ public:
 
 	void build();
 
-	bool rayIntersect(const Ray& ray, Intersaction& its);
+	bool rayIntersect(const Ray& ray, Intersection& its);
 
 private:
 	Node* buildRecursive(std::vector<uint32_t>& primitiveIndices, const std::vector<AABB>& prim_aabbs);

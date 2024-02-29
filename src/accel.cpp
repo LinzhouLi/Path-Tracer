@@ -17,7 +17,7 @@ void Accel::build() {
     cout << "Brute force intersection search. No accelration!" << endl;
 }
 
-bool Accel::rayIntersect(const Ray& ray, Intersaction& its) {
+bool Accel::rayIntersect(const Ray& ray, Intersection& its) {
     bool intersect = false;
 
     Ray ray_(ray);
@@ -175,7 +175,7 @@ BVHTree::Node* BVHTree::buildRecursive(std::vector<uint32_t>& prim_ids, const st
     return node;
 }
 
-bool BVHTree::rayIntersect(const Ray& ray, Intersaction& its) {
+bool BVHTree::rayIntersect(const Ray& ray, Intersection& its) {
     bool intersect = false;
 
 	Ray ray_(ray);

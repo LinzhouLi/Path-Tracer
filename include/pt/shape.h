@@ -37,7 +37,7 @@ private:
 };
 
 
-class Intersaction {
+class Intersection {
 public:
 	void setInfo(Triangle* shape, const Vector3f& bary);
 

@@ -83,12 +83,12 @@ bool Triangle::intersect(const Ray& ray, Vector3f& bary, float& t) const {
 }
 
 
-void Intersaction::setInfo(Triangle* shape, const Vector3f& bary) {
+void Intersection::setInfo(Triangle* shape, const Vector3f& bary) {
 	m_shape = shape;
 	m_bary = bary;
 }
 
-void Intersaction::complete() {
+void Intersection::complete() {
 	// intersact position
 	Vector3f v0, v1, v2;
 	m_shape->getVertex(v0, v1, v2);
