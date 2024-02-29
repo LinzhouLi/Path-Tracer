@@ -57,7 +57,12 @@ extern const uint64_t VdCSobolMatricesInv[][SobolMatrixSize];
 
 class SobolSampler : public Sampler {
 public:
-    SobolSampler(uint32_t spp = 1) : Sampler(spp) { }
+    SobolSampler(uint32_t spp = 1) : Sampler(spp) {
+        m_sobolIndex = -1;
+        m_dimension = -1;
+        m_scale = -1;
+        m_pixel = Vector2i();
+    }
 
     std::unique_ptr<Sampler> clone() const {
         std::unique_ptr<SobolSampler> cloned(new SobolSampler());
