@@ -15,11 +15,7 @@
 
 using namespace pt;
 
-//static int threadCount = -1;
 static bool useGui = true;
-
-//static Bitmap* testBitmap;
-//static Vector2i outputSize(768, 768);
 
 static void renderBlock(Scene* scene, Sampler* sampler, ImageBlock& block) {
     Vector2i offset = block.getOffset();
@@ -42,7 +38,7 @@ static void renderBlock(Scene* scene, Sampler* sampler, ImageBlock& block) {
     }
 }
 
-static void render(Scene* scene, Sampler* sampler) {
+static void render(Scene* scene) {
     Vector2i screenSize = scene->getCamera()->getScreenSize();
     BlockGenerator blockGenerator(screenSize, PT_BLOCK_SIZE);
     ImageBlock result(screenSize);
@@ -66,7 +62,7 @@ static void render(Scene* scene, Sampler* sampler) {
             ImageBlock block(Vector2i(PT_BLOCK_SIZE));
 
             /// Create a clone of the sampler for the current thread
-            std::unique_ptr<Sampler> sampler_t(sampler->clone());
+            std::unique_ptr<Sampler> sampler_t(scene->getSampler()->clone());
 
             for (int i = range.begin(); i < range.end(); ++i) {
                 blockGenerator.next(block);
@@ -95,14 +91,12 @@ static void render(Scene* scene, Sampler* sampler) {
 int main(int argc, char **argv) {
     threadCount = tbb::task_scheduler_init::automatic;
 
-    Scene scene;
+    Scene scene(64); // spp
     scene.loadOBJ("D:/code/Rendering/Path-Tracer/scenes/veach-mis/veach-mis.obj");
     scene.loadXML("D:/code/Rendering/Path-Tracer/scenes/veach-mis/veach-mis.xml");
     scene.preprocess();
 
-    SobolSampler sampler(32);
-
-    render(&scene, &sampler);
+    render(&scene);
 
     return 0;
 }

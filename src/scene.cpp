@@ -9,6 +9,7 @@
 #include <pt/accel.h>
 #include <pt/integrator.h>
 #include <pt/shape.h>
+#include <pt/sampler.h>
 
 #include <pugixml.hpp>
 #define TINYOBJLOADER_IMPLEMENTATION
@@ -206,9 +207,11 @@ void Scene::preprocess() {
 	m_accel->build();
 
 	// build Integrator
-	//m_integrator = new BaseColorIntegrator();
 	m_integrator = new GeometryIntegrator();
 	m_integrator->preprocess(this);
+
+	// create sampler
+	m_sampler = new SobolSampler(m_spp, m_camera->getScreenSize());
 }
 
 void Scene::createPrimitives() {

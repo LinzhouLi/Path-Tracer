@@ -6,7 +6,8 @@ namespace pt {
 
 class Scene {
 public:
-    Scene() { }
+    Scene(uint32_t spp) : m_spp(spp) { }
+
     ~Scene() {
         delete m_accel;
         delete m_sampler;
@@ -50,6 +51,9 @@ public:
     // Get primitives (editable)
     std::vector<Triangle*>* getPrimitives() { return &m_primitives; }
 
+    // Get sampler
+    Sampler* getSampler() { return m_sampler; }
+
 private:
     void createPrimitives();
 
@@ -61,6 +65,8 @@ private:
     Sampler* m_sampler = nullptr;
     Camera* m_camera = nullptr;
     Accel* m_accel = nullptr;
+
+    uint32_t m_spp;
 };
 
 }

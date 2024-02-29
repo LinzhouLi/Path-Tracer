@@ -29,6 +29,27 @@ inline int log2int(float v) {
     return exponent(v) + ((significand(v) >= midsignif) ? 1 : 0);
 }
 
+inline constexpr int32_t roundUpPow2(int32_t v) {
+    v--;
+    v |= v >> 1;
+    v |= v >> 2;
+    v |= v >> 4;
+    v |= v >> 8;
+    v |= v >> 16;
+    return v + 1;
+}
+
+inline constexpr int64_t roundUpPow2(int64_t v) {
+    v--;
+    v |= v >> 1;
+    v |= v >> 2;
+    v |= v >> 4;
+    v |= v >> 8;
+    v |= v >> 16;
+    v |= v >> 32;
+    return v + 1;
+}
+
 class Sampler {
 public:
     Sampler(uint32_t spp = 1) : m_spp(spp) { }
@@ -57,10 +78,12 @@ extern const uint64_t VdCSobolMatricesInv[][SobolMatrixSize];
 
 class SobolSampler : public Sampler {
 public:
-    SobolSampler(uint32_t spp = 1) : Sampler(spp) {
-        m_sobolIndex = -1;
-        m_dimension = -1;
-        m_scale = -1;
+    SobolSampler() = default;
+
+    SobolSampler(uint32_t spp, Vector2i screenSize) : Sampler(spp) {
+        m_sobolIndex = 0;
+        m_dimension = 0;
+        m_scale = roundUpPow2(std::max(screenSize.x(), screenSize.y()));
         m_pixel = Vector2i();
     }
 
