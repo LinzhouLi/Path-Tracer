@@ -3,6 +3,7 @@
 #include <pt/block.h>
 #include <pt/timer.h>
 #include <pt/camera.h>
+#include <pt/sampler.h>
 #include <pt/integrator.h>
 #include <pt/scene.h>
 #include <pt/bitmap.h>
@@ -20,24 +21,28 @@ static bool useGui = true;
 //static Bitmap* testBitmap;
 //static Vector2i outputSize(768, 768);
 
-static void renderBlock(Scene* scene, ImageBlock& block) {
+static void renderBlock(Scene* scene, Sampler* sampler, ImageBlock& block) {
     Vector2i offset = block.getOffset();
     Vector2i size = block.getSize();
 
     block.clear();
     for (uint32_t y = 0; y < size.y(); ++y) {
         for (uint32_t x = 0; x < size.x(); ++x) {
-            Vector2f pixelSample = Vector2f(float(x + offset.x()) + 0.5, float(y + offset.y()) + 0.5);
+            for (uint32_t s = 0; s < sampler->getSPP(); s++) {
+                Vector2i pixel = Vector2i(x, y) + offset;
+                sampler->startPixelSample(pixel, s);
+                Vector2f pixelSample = pixel.cast<float>() + sampler->sample2D();
 
-            Ray ray = scene->getCamera()->sampleRay(pixelSample);
-            Color3f value = scene->getIntegrator()->Li(scene, ray);
+                Ray ray = scene->getCamera()->sampleRay(pixelSample);
+                Color3f value = scene->getIntegrator()->Li(scene, ray);
 
-            block.put(pixelSample, value);
+                block.put(pixelSample, value);
+            }
         }
     }
 }
 
-static void render(Scene* scene) {
+static void render(Scene* scene, Sampler* sampler) {
     Vector2i screenSize = scene->getCamera()->getScreenSize();
     BlockGenerator blockGenerator(screenSize, PT_BLOCK_SIZE);
     ImageBlock result(screenSize);
@@ -60,14 +65,13 @@ static void render(Scene* scene) {
         auto map = [&](const tbb::blocked_range<int>& range) {
             ImageBlock block(Vector2i(PT_BLOCK_SIZE));
 
-            /// sampler
+            /// Create a clone of the sampler for the current thread
+            std::unique_ptr<Sampler> sampler_t(sampler->clone());
 
             for (int i = range.begin(); i < range.end(); ++i) {
                 blockGenerator.next(block);
 
-                /// sampler
-
-                renderBlock(scene, block);
+                renderBlock(scene, sampler_t.get(), block);
 
                 result.put(block);
             }
@@ -92,11 +96,13 @@ int main(int argc, char **argv) {
     threadCount = tbb::task_scheduler_init::automatic;
 
     Scene scene;
-    scene.loadOBJ("D:/code/Rendering/Path-Tracer/scenes/cornell-box/cornell-box.obj");
-    scene.loadXML("D:/code/Rendering/Path-Tracer/scenes/cornell-box/cornell-box.xml");
+    scene.loadOBJ("D:/code/Rendering/Path-Tracer/scenes/veach-mis/veach-mis.obj");
+    scene.loadXML("D:/code/Rendering/Path-Tracer/scenes/veach-mis/veach-mis.xml");
     scene.preprocess();
 
-    render(&scene);
+    SobolSampler sampler(32);
+
+    render(&scene, &sampler);
 
     return 0;
 }

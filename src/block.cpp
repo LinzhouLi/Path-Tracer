@@ -35,18 +35,16 @@ void ImageBlock::fromBitmap(const Bitmap &bitmap) {
             coeffRef(y, x) << bitmap.coeff(y, x), 1;
 }
 
-void ImageBlock::put(const Vector2f &_pos, const Color3f &value) {
+void ImageBlock::put(const Vector2f &pos_f, const Color3f &value) {
     if (!value.isValid()) {
         /* If this happens, go fix your code instead of removing this warning ;) */
         cerr << "Integrator: computed an invalid radiance value: " << value.toString() << endl;
         return;
     }
 
-    Vector2f pos(
-        _pos.x() - 0.5f - (m_offset.x() - m_borderSize),
-        _pos.y() - 0.5f - (m_offset.y() - m_borderSize)
-    );
-    int x = std::floor(pos.x()), y = std::floor(pos.y());
+    Vector2i pos = pos_f.cast<int>() - m_offset - Vector2i(m_borderSize);
+    int x = clamp(pos.x(), 0, m_size.x() - 1); // some numerical error without clamp maximum value
+    int y = clamp(pos.y(), 0, m_size.y() - 1);
     coeffRef(y, x) += Color4f(value);
 }
     

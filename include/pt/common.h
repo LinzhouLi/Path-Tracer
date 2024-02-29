@@ -20,15 +20,6 @@
 #include <tinyformat.h>
 
 
-#define Epsilon 1e-4f
-
-#define M_PI         3.14159265358979323846f
-#define INV_PI       0.31830988618379067154f
-#define INV_TWOPI    0.15915494309189533577f
-#define INV_FOURPI   0.07957747154594766788f
-#define SQRT_TWO     1.41421356237309504880f
-#define INV_SQRT_TWO 0.70710678118654752440f
-
 #if defined(__APPLE__ )
 #define PLATFORM_MACOS
 #elif defined(__linux__)
@@ -46,6 +37,14 @@
 
 namespace pt {
 
+static constexpr float FloatOneMinusEpsilon = 0x1.fffffep-1;
+static constexpr float Epsilon = 1e-4f;
+static constexpr float M_PI = 3.14159265358979323846f;
+static constexpr float INV_PI = 0.31830988618379067154f;
+static constexpr float INV_TWOPI = 0.15915494309189533577f;
+static constexpr float INV_FOURPI = 0.07957747154594766788f;
+static constexpr float SQRT_TWO = 1.41421356237309504880f;
+static constexpr float INV_SQRT_TWO = 0.70710678118654752440f;
 static int threadCount = -1;
 
 /* Forward declarations */
