@@ -2,6 +2,7 @@
 
 #include <pt/common.h>
 #include <pt/aabb.h>
+#include <tbb/mutex.h>
 
 namespace pt {
 
@@ -67,6 +68,7 @@ private:
 
 	Node* root = nullptr;
 	std::vector<Node*> node_pool;
+	mutable tbb::mutex m_mutex; // lock for node_pool.push_back()
 };
 
 }

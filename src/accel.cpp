@@ -7,9 +7,8 @@
 #include <pt/shape.h>
 #include <pt/timer.h>
 
+#include <tbb/tbb.h>
 #include <tbb/task_group.h>
-#include <tbb/task_scheduler_init.h>
-#include <thread>
 
 namespace pt {
 
@@ -40,7 +39,6 @@ bool Accel::rayIntersect(const Ray& ray, Intersection& its) {
 }
 
 void BVHTree::build() {
-    tbb::task_scheduler_init init(threadCount);
     cout << "Building BVH tree for accelration ...";
     cout.flush();
     Timer timer;
@@ -73,8 +71,13 @@ BVHTree::Node* BVHTree::buildRecursive(
         return nullptr;
 
     auto prims_num = prim_ids_end - prim_ids_begin;
-    Node* node = new Node();
-    node_pool.push_back(node);
+
+    Node* node;
+    {
+        tbb::mutex::scoped_lock lock(m_mutex);
+        node = new Node();
+        node_pool.push_back(node);
+    }
 
     // compute sub-tree aabb
     AABB aabb, centroid_aabb;

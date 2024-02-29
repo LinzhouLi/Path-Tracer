@@ -51,7 +51,6 @@ static void render(Scene* scene) {
     }
 
     std::thread render_thread([&] {
-        tbb::task_scheduler_init init(threadCount);
         cout << "Rendering .. ";
         cout.flush();
         Timer timer;
@@ -90,6 +89,7 @@ static void render(Scene* scene) {
 
 int main(int argc, char **argv) {
     threadCount = tbb::task_scheduler_init::automatic;
+    tbb::task_scheduler_init init(threadCount);
 
     Scene scene(64); // spp
     scene.loadOBJ("D:/code/Rendering/Path-Tracer/scenes/veach-mis/veach-mis.obj");
