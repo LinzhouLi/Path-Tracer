@@ -1,9 +1,17 @@
 #pragma once
 
-#include <pt/common.h>
 #include <pt/vector.h>
 
 namespace pt {
+
+struct TriangleSample {
+	TriangleSample(const Vector3f& p_, const Vector3f& n_, float pdf_) :
+		p(p_), n(n_), pdf(pdf_) { }
+
+	Vector3f p;
+	Vector3f n;
+	float pdf; // area measure
+};
 
 class Triangle {
 public:
@@ -19,6 +27,9 @@ public:
 
 	// Ray intersect with triangle
 	bool intersect(const Ray& ray, Vector3f& bary, float& t) const;
+
+	// Sample a point on triangle
+	TriangleSample sample(const Vector2f& u) const;
 
 	// Get geometry infomation
 	void getVertex(Vector3f& v0, Vector3f& v1, Vector3f& v2) const;
@@ -39,9 +50,9 @@ private:
 
 class Intersection {
 public:
-	void setInfo(Triangle* shape, const Vector3f& bary);
+	void setInfo(const Triangle* shape, const Vector3f& bary);
 
-	Triangle* getShape() { return m_shape; }
+	const Triangle* getShape() { return m_shape; }
 
 	void complete();
 
@@ -51,7 +62,7 @@ public:
 	Vector2f uv;
 
 private:
-	Triangle* m_shape = nullptr;
+	const Triangle* m_shape = nullptr;
 	Vector3f m_bary;
 };
 

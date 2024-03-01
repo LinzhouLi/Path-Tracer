@@ -9,14 +9,14 @@ namespace pt {
 // Brute force method
 class Accel {
 public:
-	Accel(std::vector<Triangle*>* primitives) : m_primitives(primitives) { }
+	Accel(std::vector<Triangle*>* primitives) : m_shapes(primitives) { }
 
 	virtual void build();
 
 	virtual bool rayIntersect(const Ray& ray, Intersection& its);
 
 protected:
-	std::vector<Triangle*>* m_primitives;
+	std::vector<Triangle*>* m_shapes;
 };
 
 // BVH tree accelration

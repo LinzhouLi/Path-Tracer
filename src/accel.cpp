@@ -21,8 +21,8 @@ bool Accel::rayIntersect(const Ray& ray, Intersection& its) {
 
     Ray ray_(ray);
 
-    for (uint32_t idx = 0; idx < m_primitives->size(); ++idx) {
-        Triangle* primitive =  (*m_primitives)[idx];
+    for (uint32_t idx = 0; idx < m_shapes->size(); ++idx) {
+        Triangle* primitive =  (*m_shapes)[idx];
         Vector3f bary; float t;
         if (primitive->intersect(ray_, bary, t)) {
             ray_.max_dis = t; // find nearest intersection point
@@ -43,11 +43,11 @@ void BVHTree::build() {
     cout.flush();
     Timer timer;
 
-    std::vector<AABB> prim_aabbs(m_primitives->size());
-    std::vector<uint32_t> prim_ids(m_primitives->size());
+    std::vector<AABB> prim_aabbs(m_shapes->size());
+    std::vector<uint32_t> prim_ids(m_shapes->size());
 
-    for (uint32_t i = 0; i < m_primitives->size(); i++) {
-        prim_aabbs[i] = (*m_primitives)[i]->getAABB();
+    for (uint32_t i = 0; i < m_shapes->size(); i++) {
+        prim_aabbs[i] = (*m_shapes)[i]->getAABB();
         prim_ids[i] = i;
     }
 
@@ -201,7 +201,7 @@ bool BVHTree::rayIntersect(const Ray& ray, Intersection& its) {
 
         if (node->isLeaf()) {
             for (uint32_t prim_idx : node->prim_ids) {
-				Triangle* primitive = (*m_primitives)[prim_idx];
+				Triangle* primitive = (*m_shapes)[prim_idx];
 				Vector3f bary; float t;
                 if (primitive->intersect(ray_, bary, t)) {
 					ray_.max_dis = t; // find nearest intersection point

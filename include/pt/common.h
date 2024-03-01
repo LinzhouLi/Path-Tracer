@@ -89,6 +89,7 @@ class Sampler;
 class Scene;
 class Transform;
 class Triangle;
+class AreaLight;
 
 
 /// Import cout, cerr, endl for debugging purposes
@@ -106,24 +107,6 @@ public:
 
 /// Convert a string to lower case
 extern std::string toLower(const std::string& value);
-
-/// Convert a string into an boolean value
-extern bool toBool(const std::string& str);
-
-/// Convert a string into a signed integer value
-extern int toInt(const std::string& str);
-
-/// Convert a string into an unsigned integer value
-extern unsigned int toUInt(const std::string& str);
-
-/// Convert a string into a floating point value
-extern float toFloat(const std::string& str);
-
-/// Convert a string into a 3D vector
-extern Eigen::Vector3f toVector3f(const std::string& str);
-
-/// Tokenize a string into a list by splitting at 'delim'
-extern std::vector<std::string> tokenize(const std::string& s, const std::string& delim = ", ", bool includeEmpty = false);
 
 /// Check if a string ends with another string
 extern bool endsWith(const std::string& value, const std::string& ending);

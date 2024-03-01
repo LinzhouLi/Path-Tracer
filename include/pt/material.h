@@ -1,6 +1,5 @@
 #pragma once
 
-#include <pt/common.h>
 #include <pt/vector.h>
 #include <pt/color.h>
 
@@ -28,6 +27,8 @@ public:
 	std::string getName() { return m_name; }
 
 	void setTexture(Bitmap* texture) { m_diffuse_texture = texture; }
+
+	void setEmission(const Vector3f& emission) { m_emission = emission; }
 
 	Bitmap* getTexture() { return m_diffuse_texture; }
 

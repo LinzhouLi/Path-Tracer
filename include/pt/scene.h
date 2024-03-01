@@ -1,8 +1,15 @@
 #pragma once
 
-#include <pt/common.h>
+#include <pt/vector.h>
 
 namespace pt {
+
+struct LightInfo {
+    LightInfo(const std::string& name, const Vector3f& c) : mtl_name(name), radiance(c) { }
+
+    std::string mtl_name;
+    Vector3f radiance;
+};
 
 class Scene {
 public:
@@ -15,7 +22,7 @@ public:
         delete m_integrator;
         for (auto p : m_meshes) delete p;
         for (auto p : m_materials) delete p;
-        for (auto p : m_primitives) delete p;
+        for (auto p : m_shapes) delete p;
     }
 
     // Load mesh and material from OBJ file
@@ -49,17 +56,23 @@ public:
     void preprocess();
 
     // Get primitives (editable)
-    std::vector<Triangle*>* getPrimitives() { return &m_primitives; }
+    std::vector<Triangle*>* getPrimitives() { return &m_shapes; }
 
     // Get sampler
     Sampler* getSampler() { return m_sampler; }
 
+
+
 private:
     void createPrimitives();
+    void createAreaLights();
 
-    std::vector<Triangle*> m_primitives;
+    std::vector<LightInfo> m_light_infos;
+
+    std::vector<Triangle*> m_shapes;
     std::vector<TriangleMesh*> m_meshes;
     std::vector<Material*> m_materials;
+    std::vector<AreaLight*> m_lights;
 
     Integrator* m_integrator = nullptr;
     Sampler* m_sampler = nullptr;

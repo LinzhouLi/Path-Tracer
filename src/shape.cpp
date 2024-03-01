@@ -8,6 +8,11 @@ namespace pt {
 
 std::vector<TriangleMesh*>* Triangle::m_meshes = nullptr;
 
+Vector2f uniformSampleTriangle(const Vector2f& u) {
+	float su0 = std::sqrt(u.x());
+	return Vector2f(1 - su0, u.y() * su0);
+}
+
 void Triangle::getVertex(Vector3f& v0, Vector3f& v1, Vector3f& v2) const {
 	TriangleMesh* mesh = getMesh();
 	mesh->getVertex(m_triangle_id, v0, v1, v2);
@@ -82,8 +87,24 @@ bool Triangle::intersect(const Ray& ray, Vector3f& bary, float& t) const {
 	return t >= ray.min_dis && t <= ray.max_dis;
 }
 
+TriangleSample Triangle::sample(const Vector2f& u) const {
+	Vector2f b = uniformSampleTriangle(u);
+	Vector3f bary(b.x(), b.y(), 1.0 - b.x() - b.y());
 
-void Intersection::setInfo(Triangle* shape, const Vector3f& bary) {
+	Vector3f v0, v1, v2, n0, n1, n2;
+	getVertex(v0, v1, v2);
+	Vector3f p = v0 * bary.x() + v1 * bary.y() + v2 * bary.z();
+
+	Vector3f n = ((v0 - v2).cross(v1 - v2));
+	if (getNormal(n0, n1, n2))
+		n = n0 * bary.x() + n1 * bary.y() + n2 * bary.z();
+	
+	float pdf = 1.0 / surfaceArea();
+	return TriangleSample(p, n, pdf);
+}
+
+
+void Intersection::setInfo(const Triangle* shape, const Vector3f& bary) {
 	m_shape = shape;
 	m_bary = bary;
 }

@@ -10,12 +10,21 @@
 #include <pt/integrator.h>
 #include <pt/shape.h>
 #include <pt/sampler.h>
+#include <pt/light.h>
 
 #include <pugixml.hpp>
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
 
 namespace pt {
+
+float toFloat(const std::string& str) {
+	char* end_ptr = nullptr;
+	float result = (float)strtof(str.c_str(), &end_ptr);
+	if (*end_ptr != '\0')
+		throw PathTracerException("Could not parse floating point value \"%s\"", str);
+	return result;
+}
 
 void Scene::loadOBJ(const std::string& filename) {
 	cout << "Reading a OBJ file from \"" << filename << "\" ..." << endl;
@@ -154,17 +163,21 @@ void Scene::loadXML(const std::string& filename) {
 		eye, lookat, up
 	);
 
+	cout << "Load a camera!" << endl;
+
 	auto light_nodes = doc.children("light");
 	for (pugi::xml_node light_node : light_nodes) {
-		//cout << light_node.attribute("mtlname").value() << endl;
+		std::string light_name = light_node.attribute("mtlname").value();
 		const char* radiance_str = light_node.attribute("radiance").as_string();
 		float r = toFloat(std::strtok(const_cast<char*>(radiance_str), ","));
 		float g = toFloat(std::strtok(nullptr, ","));
 		float b = toFloat(std::strtok(nullptr, ","));
 		Vector3f radiance(r, g, b);
-		//cout << radiance.toString() << endl;
-		// TODO: add light
+
+		m_light_infos.push_back(LightInfo(light_name, radiance));
 	}
+
+	cout << "Load " << this->m_light_infos.size() << " area lights!" << endl;
 }
 
 TriangleMesh* Scene::getMesh(const std::string& mesh_name) {
@@ -198,12 +211,13 @@ bool Scene::rayIntersect(const Ray& ray, Intersection& its) const {
 }
 
 void Scene::preprocess() {
-	// create primitives
+	// create primitives & lights
 	Triangle::setMeshGroup(&m_meshes);
 	createPrimitives();
+	createAreaLights();
 
 	// build accelration
-	m_accel = new BVHTree(&m_primitives);
+	m_accel = new BVHTree(&m_shapes);
 	m_accel->build();
 
 	// build Integrator
@@ -212,7 +226,6 @@ void Scene::preprocess() {
 
 	// create sampler
 	m_sampler = new SobolSampler(m_spp, m_camera->getScreenSize());
-	//m_sampler = new IndependentSampler(m_spp);
 }
 
 void Scene::createPrimitives() {
@@ -220,9 +233,21 @@ void Scene::createPrimitives() {
 	for (uint32_t i = 0; i < m_meshes.size(); i++) {
 		total_triangles += m_meshes[i]->getTriangleCount();
 		for (uint32_t j = 0; j < m_meshes[i]->getTriangleCount(); j++)
-			m_primitives.push_back(new Triangle(i, j));
+			m_shapes.push_back(new Triangle(i, j));
 	}
 	cout << "Create " << total_triangles << " primitives!" << endl;
+}
+
+void Scene::createAreaLights() {
+	for (LightInfo& info : m_light_infos) {
+		getMaterial(info.mtl_name)->setEmission(info.radiance);
+		for (Triangle* shape : m_shapes) {
+			if (getMaterial(shape->getMaterialId())->getName() == info.mtl_name) {
+				m_lights.push_back(new AreaLight(shape, info.radiance));
+			}
+		}
+	}
+	cout << m_lights.size() << endl;
 }
 
 }
