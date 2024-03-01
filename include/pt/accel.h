@@ -15,6 +15,8 @@ public:
 
 	virtual bool rayIntersect(const Ray& ray, Intersection& its);
 
+	virtual bool rayIntersect(const Ray& ray);
+
 protected:
 	std::vector<Triangle*>* m_shapes;
 };
@@ -58,6 +60,8 @@ public:
 	void build();
 
 	bool rayIntersect(const Ray& ray, Intersection& its);
+
+	bool rayIntersect(const Ray& ray);
 
 private:
 	Node* buildRecursive(

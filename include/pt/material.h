@@ -14,10 +14,7 @@ public:
 		const Vector3f& transmittance = Vector3f(1.0f),
 		const float shiness = 1.0f,
 		const float ior = 1.0f
-	) : m_name(name), m_diffuse(diffuse), m_specular(specular), m_transmittance(transmittance), m_shininess(shiness), m_ior(ior) {
-		m_emission = Vector3f(0.0f);
-		is_emitter = false;
-	}
+	) : m_name(name), m_diffuse(diffuse), m_specular(specular), m_transmittance(transmittance), m_shininess(shiness), m_ior(ior) { }
 
 	~Material() {
 		if (m_diffuse_texture != nullptr)
@@ -28,22 +25,18 @@ public:
 
 	void setTexture(Bitmap* texture) { m_diffuse_texture = texture; }
 
-	void setEmission(const Vector3f& emission) { m_emission = emission; }
-
 	Bitmap* getTexture() { return m_diffuse_texture; }
 
-	Color3f getBaseColor() { return Color3f(m_diffuse.x(), m_diffuse.y(), m_diffuse.z()); }
+	Vector3f getBaseColor() { return m_diffuse; }
 
-	Color3f getBaseColor(const Vector2f& uv);
+	Vector3f getBaseColor(const Vector2f& uv);
 
 private:
 	std::string m_name;
-	bool is_emitter;
 
 	Vector3f m_diffuse;
 	Vector3f m_specular;
 	Vector3f m_transmittance;
-	Vector3f m_emission;
 
 	float m_shininess;
 	float m_ior;

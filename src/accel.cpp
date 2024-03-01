@@ -38,6 +38,18 @@ bool Accel::rayIntersect(const Ray& ray, Intersection& its) {
     return intersect;
 }
 
+bool Accel::rayIntersect(const Ray& ray) {
+    for (uint32_t idx = 0; idx < m_shapes->size(); ++idx) {
+        Triangle* primitive = (*m_shapes)[idx];
+        Vector3f bary; float t;
+        if (primitive->intersect(ray, bary, t)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+
 void BVHTree::build() {
     cout << "Building BVH tree for accelration ...";
     cout.flush();
@@ -223,6 +235,33 @@ bool BVHTree::rayIntersect(const Ray& ray, Intersection& its) {
 	}
 
 	return intersect;
+}
+
+bool BVHTree::rayIntersect(const Ray& ray) {
+    std::vector<Node*> stack;
+    stack.push_back(root);
+
+    while (!stack.empty()) {
+        Node* node = stack.back();
+        stack.pop_back();
+
+        if (node == nullptr) continue;
+
+        if (node->isLeaf()) {
+            for (uint32_t prim_idx : node->prim_ids) {
+                Triangle* primitive = (*m_shapes)[prim_idx];
+                Vector3f bary; float t;
+                if (primitive->intersect(ray, bary, t)) return true;
+            }
+        }
+        else {
+            if (node->aabb.intersect(ray)) {
+                stack.push_back(node->left);
+                stack.push_back(node->right);
+            }
+        }
+    }
+    return false;
 }
     
 }

@@ -15,9 +15,8 @@ struct TriangleSample {
 
 class Triangle {
 public:
-	static void setMeshGroup(std::vector<TriangleMesh*>* meshes) { m_meshes = meshes; }
-
-	Triangle(uint32_t mesh_id, uint32_t triangle_id) : m_mesh_id(mesh_id), m_triangle_id(triangle_id) { }
+	Triangle(uint32_t triangle_id, TriangleMesh* mesh, AreaLight* light = nullptr) : 
+		m_triangle_id(triangle_id), m_mesh(mesh), m_light(light) { }
 
 	// Calculate surface area
 	float surfaceArea() const;
@@ -39,12 +38,20 @@ public:
 	// Get material ID
 	uint32_t getMaterialId() const;
 
+	// Get mesh
+	TriangleMesh* getMesh() const { return m_mesh; }
+
+	// Get area light
+	AreaLight* getLight() const { return m_light; }
+
+	// Set area light
+	void setLight(AreaLight* light) { m_light = light; }
+
 private:
-	TriangleMesh* getMesh() const { return (*Triangle::m_meshes)[m_mesh_id]; }
 
-	static std::vector<TriangleMesh*>* m_meshes;
-
-	uint32_t m_mesh_id, m_triangle_id;
+	uint32_t m_triangle_id;
+	TriangleMesh* m_mesh = nullptr;
+	AreaLight* m_light = nullptr;
 };
 
 
@@ -52,13 +59,15 @@ class Intersection {
 public:
 	void setInfo(const Triangle* shape, const Vector3f& bary);
 
-	const Triangle* getShape() { return m_shape; }
+	const Triangle* getShape() const { return m_shape; }
 
 	void complete();
 
-	Vector3f pos;
+	Vector3f Le(const Vector3f& w) const;
+
+	Vector3f p;
 	Vector3f geo_n; // geometry normal
-	Vector3f sha_n; // shading normal
+	Vector3f n; // shading normal
 	Vector2f uv;
 
 private:

@@ -4,9 +4,11 @@
 
 namespace pt {
 
-Color3f Material::getBaseColor(const Vector2f& uv) {
-	if (m_diffuse_texture)
-		return m_diffuse_texture->sample(uv);
+Vector3f Material::getBaseColor(const Vector2f& uv) {
+	if (m_diffuse_texture) {
+		Color3f c = m_diffuse_texture->sample(uv);
+		return Vector3f(c.x(), c.y(), c.z());
+	}
 	else
 		return getBaseColor();
 }

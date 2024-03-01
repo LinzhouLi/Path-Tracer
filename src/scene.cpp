@@ -192,6 +192,10 @@ Material* Scene::getMaterial(const std::string& material_name) {
 	return nullptr;
 }
 
+Material* Scene::getMaterial(const Intersection& its) {
+	return m_materials[its.getShape()->getMaterialId()];
+}
+
 TriangleMesh* Scene::getMesh(const uint32_t mesh_id) {
 	if (mesh_id >= 0 && mesh_id < m_meshes.size())
 		return m_meshes[mesh_id];
@@ -210,9 +214,17 @@ bool Scene::rayIntersect(const Ray& ray, Intersection& its) const {
 	return m_accel->rayIntersect(ray, its);
 }
 
+bool Scene::unocculded(Vector3f p0, Vector3f p1, const Vector3f& n0, const Vector3f& n1) const {
+	p0 += n0 * Epsilon;
+	p1 += n1 * Epsilon;
+	Vector3f d = p1 - p0;
+	float dist = d.norm();
+	Ray ray(p0, d / dist, 0, dist * (1 - Epsilon));
+	return !m_accel->rayIntersect(ray);
+}
+
 void Scene::preprocess() {
 	// create primitives & lights
-	Triangle::setMeshGroup(&m_meshes);
 	createPrimitives();
 	createAreaLights();
 
@@ -221,11 +233,12 @@ void Scene::preprocess() {
 	m_accel->build();
 
 	// build Integrator
-	m_integrator = new GeometryIntegrator();
+	m_integrator = new PathIntegrator();
 	m_integrator->preprocess(this);
 
 	// create sampler
-	m_sampler = new SobolSampler(m_spp, m_camera->getScreenSize());
+	//m_sampler = new SobolSampler(m_spp, m_camera->getScreenSize());
+	m_sampler = new IndependentSampler(m_spp);
 }
 
 void Scene::createPrimitives() {
@@ -233,17 +246,18 @@ void Scene::createPrimitives() {
 	for (uint32_t i = 0; i < m_meshes.size(); i++) {
 		total_triangles += m_meshes[i]->getTriangleCount();
 		for (uint32_t j = 0; j < m_meshes[i]->getTriangleCount(); j++)
-			m_shapes.push_back(new Triangle(i, j));
+			m_shapes.push_back(new Triangle(j, m_meshes[i]));
 	}
 	cout << "Create " << total_triangles << " primitives!" << endl;
 }
 
 void Scene::createAreaLights() {
 	for (LightInfo& info : m_light_infos) {
-		getMaterial(info.mtl_name)->setEmission(info.radiance);
 		for (Triangle* shape : m_shapes) {
 			if (getMaterial(shape->getMaterialId())->getName() == info.mtl_name) {
-				m_lights.push_back(new AreaLight(shape, info.radiance));
+				AreaLight* light = new AreaLight(shape, info.radiance);
+				m_lights.push_back(light);
+				shape->setLight(light);
 			}
 		}
 	}

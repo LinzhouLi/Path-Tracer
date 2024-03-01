@@ -3,10 +3,9 @@
 #include <pt/mesh.h>
 #include <pt/aabb.h>
 #include <pt/ray.h>
+#include <pt/light.h>
 
 namespace pt {
-
-std::vector<TriangleMesh*>* Triangle::m_meshes = nullptr;
 
 Vector2f uniformSampleTriangle(const Vector2f& u) {
 	float su0 = std::sqrt(u.x());
@@ -113,15 +112,15 @@ void Intersection::complete() {
 	// intersact position
 	Vector3f v0, v1, v2;
 	m_shape->getVertex(v0, v1, v2);
-	pos = v0 * m_bary.x() + v1 * m_bary.y() + v2 * m_bary.z();
+	p = v0 * m_bary.x() + v1 * m_bary.y() + v2 * m_bary.z();
 
 	// normal
-	sha_n = geo_n = ((v0 - v2).cross(v1 - v2)).normalized();
+	n = geo_n = ((v0 - v2).cross(v1 - v2)).normalized();
 	Vector3f n0, n1, n2;
 	if (m_shape->getNormal(n0, n1, n2)) {
-		sha_n = n0 * m_bary.x() + n1 * m_bary.y() + n2 * m_bary.z();
-		if (sha_n.norm() > 0) sha_n.normalize(); 
-		else sha_n = geo_n; // invalid when normal length == 0 (this should be checked when mesh loading)
+		n = n0 * m_bary.x() + n1 * m_bary.y() + n2 * m_bary.z();
+		if (n.norm() > 0) n.normalize(); 
+		else n = geo_n; // invalid when normal length == 0 (this should be checked when mesh loading)
 	}
 
 	// uv
@@ -130,4 +129,10 @@ void Intersection::complete() {
 	uv = uv0 * m_bary.x() + uv1 * m_bary.y() + uv2 * m_bary.z();
 }
 	
+Vector3f Intersection::Le(const Vector3f& w) const {
+	AreaLight* light = m_shape->getLight();
+	if (light) return light->L(n, w);
+	else return Vector3f(0.0f, 0.0f, 0.0f);
+}
+
 }

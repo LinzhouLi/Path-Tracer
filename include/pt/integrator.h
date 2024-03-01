@@ -8,7 +8,7 @@ class Integrator {
 public:
 	virtual void preprocess(Scene* scene) { }
 
-	virtual Color3f Li(Scene* scene, const Ray& ray) const = 0;
+	virtual Color3f Li(Scene* scene, Sampler* sampler, const Ray& ray) const = 0;
 };
 
 class GeometryIntegrator : public Integrator {
@@ -17,7 +17,7 @@ public:
 		cout << "Build GeometryIntegrator!" << endl;
 	}
 
-	Color3f Li(Scene* scene, const Ray& ray) const;
+	Color3f Li(Scene* scene, Sampler* sampler, const Ray& ray) const;
 };
 
 class BaseColorIntegrator : public Integrator {
@@ -26,7 +26,16 @@ public:
 		cout << "Build BaseColorIntegrator!" << endl;
 	}
 
-	Color3f Li(Scene* scene, const Ray& ray) const;
+	Color3f Li(Scene* scene, Sampler* sampler, const Ray& ray) const;
+};
+
+class PathIntegrator : public Integrator {
+public:
+	void preprocess(Scene* scene) {
+		cout << "Build PathIntegrator!" << endl;
+	}
+
+	Color3f Li(Scene* scene, Sampler* sampler, const Ray& ray) const;
 };
 
 }

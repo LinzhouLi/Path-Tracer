@@ -49,8 +49,14 @@ public:
     // Get material by index
     Material* getMaterial(const uint32_t material_id);
 
+    // Get material by intersection
+    Material* getMaterial(const Intersection& its);
+
     // Ray intersect with scene (use accelration struction)
     bool rayIntersect(const Ray& ray, Intersection& its) const;
+
+    // if unocculded between p0 and p1
+    bool unocculded(Vector3f p0, Vector3f p1, const Vector3f& n0 = Vector3f(0.0), const Vector3f& n1 = Vector3f(0.0)) const;
 
     // Create primitives, build accelration struction and integrator
     void preprocess();
@@ -61,7 +67,8 @@ public:
     // Get sampler
     Sampler* getSampler() { return m_sampler; }
 
-
+    // Uniform sample lights
+    Vector3f uniformSampleLights(const Intersection& its, Sampler* sampler);
 
 private:
     void createPrimitives();
