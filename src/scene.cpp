@@ -212,6 +212,7 @@ void Scene::preprocess() {
 
 	// create sampler
 	m_sampler = new SobolSampler(m_spp, m_camera->getScreenSize());
+	//m_sampler = new IndependentSampler(m_spp);
 }
 
 void Scene::createPrimitives() {

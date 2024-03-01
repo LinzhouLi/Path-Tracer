@@ -37,7 +37,6 @@
 
 namespace pt {
 
-static constexpr float FloatOneMinusEpsilon = 0x1.fffffep-1;
 static constexpr float Epsilon = 1e-4f;
 static constexpr float M_PI = 3.14159265358979323846f;
 static constexpr float INV_PI = 0.31830988618379067154f;
@@ -104,10 +103,6 @@ public:
 	template <typename... Args> PathTracerException(const char* fmt, const Args &... args)
 		: std::runtime_error(tfm::format(fmt, args...)) { }
 };
-
-
-/// Indent a string by the specified number of spaces
-extern std::string indent(const std::string& string, int amount = 2);
 
 /// Convert a string to lower case
 extern std::string toLower(const std::string& value);

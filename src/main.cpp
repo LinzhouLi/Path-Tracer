@@ -22,6 +22,8 @@ static void renderBlock(Scene* scene, Sampler* sampler, ImageBlock& block) {
     Vector2i size = block.getSize();
 
     block.clear();
+    sampler->startBlockSample(offset);
+
     for (uint32_t y = 0; y < size.y(); ++y) {
         for (uint32_t x = 0; x < size.x(); ++x) {
             for (uint32_t s = 0; s < sampler->getSPP(); s++) {

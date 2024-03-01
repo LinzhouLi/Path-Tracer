@@ -34,7 +34,7 @@
 
 #include <pt/sampler.h>
 
-namespace pt {
+namespace sobol {
 
 // clang-format off
 const uint32_t SobolMatrices32[NSobolDimensions * SobolMatrixSize] = {
