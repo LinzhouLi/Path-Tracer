@@ -42,7 +42,7 @@ public:
      *     Samples will be convolved with the image reconstruction
      *     filter provided here.
      */
-    ImageBlock(const Vector2i &size);
+    ImageBlock(const Vector2i &size, const Filter* filter = nullptr);
     
     /// Release all memory
     ~ImageBlock();
@@ -77,7 +77,7 @@ public:
     void clear() { setConstant(Color4f()); }
 
     /// Record a sample with the given position and radiance value
-    void put(const Vector2f &pos, const Color3f &value);
+    void put(const Vector2f & globalPos, const Color3f &value);
 
     /**
      * \brief Merge another image block into this one
@@ -99,6 +99,13 @@ protected:
     Vector2i m_offset;
     Vector2i m_size;
     int m_borderSize = 0;
+
+    float* m_filter = nullptr;
+    float m_filterRadius = 0.0f;
+    float* m_weightsX = nullptr;
+    float* m_weightsY = nullptr;
+    float m_lookupFactor = 0.0f;
+
     mutable tbb::mutex m_mutex;
 };
 

@@ -55,7 +55,7 @@ template <typename Scalar, int Dimension>  struct TPoint;
 template <typename Point, typename Vector> struct TRay;
 template <typename Point>                  struct TBoundingBox;
 
-/* Basic Nori data structures (vectors, points, rays, bounding boxes,
+/* Basic data structures (vectors, points, rays, bounding boxes,
 	kd-trees) are oblivious to the underlying data type and dimension.
 	The following list of typedefs establishes some convenient aliases
 	for specific types. */
@@ -90,6 +90,7 @@ class Scene;
 class Transform;
 class Triangle;
 class AreaLight;
+class Filter;
 
 
 /// Import cout, cerr, endl for debugging purposes

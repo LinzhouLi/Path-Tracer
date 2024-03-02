@@ -43,7 +43,7 @@ static void renderBlock(Scene* scene, Sampler* sampler, ImageBlock& block) {
 static void render(Scene* scene) {
     Vector2i screenSize = scene->getCamera()->getScreenSize();
     BlockGenerator blockGenerator(screenSize, PT_BLOCK_SIZE);
-    ImageBlock result(screenSize);
+    ImageBlock result(screenSize, scene->getFilter());
     result.clear();
 
     GUI *gui = nullptr;
@@ -60,7 +60,7 @@ static void render(Scene* scene) {
         tbb::blocked_range<int> range(0, blockGenerator.getBlockCount());
 
         auto map = [&](const tbb::blocked_range<int>& range) {
-            ImageBlock block(Vector2i(PT_BLOCK_SIZE));
+            ImageBlock block(Vector2i(PT_BLOCK_SIZE), scene->getFilter());
 
             /// Create a clone of the sampler for the current thread
             std::unique_ptr<Sampler> sampler_t(scene->getSampler()->clone());

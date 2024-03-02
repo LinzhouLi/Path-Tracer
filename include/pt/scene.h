@@ -67,6 +67,9 @@ public:
     // Get sampler
     Sampler* getSampler() { return m_sampler; }
 
+    // Get filter
+    Filter* getFilter() { return m_filter; }
+
     // Uniform sample lights
     Vector3f uniformSampleLights(const Intersection& its, Sampler* sampler);
 
@@ -85,6 +88,7 @@ private:
     Sampler* m_sampler = nullptr;
     Camera* m_camera = nullptr;
     Accel* m_accel = nullptr;
+    Filter* m_filter = nullptr;
 
     uint32_t m_spp;
 };

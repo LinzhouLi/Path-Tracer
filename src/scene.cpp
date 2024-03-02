@@ -11,6 +11,7 @@
 #include <pt/shape.h>
 #include <pt/sampler.h>
 #include <pt/light.h>
+#include <pt/filter.h>
 
 #include <pugixml.hpp>
 #define TINYOBJLOADER_IMPLEMENTATION
@@ -239,6 +240,9 @@ void Scene::preprocess() {
 	// create sampler
 	m_sampler = new SobolSampler(m_spp, m_camera->getScreenSize());
 	//m_sampler = new IndependentSampler(m_spp);
+
+	// create filter
+	m_filter = new GaussianFilter();
 }
 
 void Scene::createPrimitives() {

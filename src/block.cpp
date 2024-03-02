@@ -4,19 +4,41 @@
     Copyright (c) 2015 by Wenzel Jakob
 */
 
-#include <pt/color.h>
 #include <pt/block.h>
 #include <pt/bitmap.h>
+#include <pt/filter.h>
 #include <tbb/tbb.h>
 
 namespace pt {
 
-ImageBlock::ImageBlock(const Vector2i &size) : m_offset(0, 0), m_size(size) {
+ImageBlock::ImageBlock(const Vector2i &size, const Filter* filter) : m_offset(0, 0), m_size(size) {
+    if (filter) {
+        /* Tabulate the image reconstruction filter for performance reasons */
+        m_filterRadius = filter->getRadius();
+        m_borderSize = (int)std::ceil(m_filterRadius - 0.5f);
+        m_filter = new float[PT_FILTER_RESOLUTION + 1];
+        for (int i = 0; i < PT_FILTER_RESOLUTION; ++i) {
+            float pos = (m_filterRadius * i) / PT_FILTER_RESOLUTION;
+            m_filter[i] = filter->eval(pos);
+        }
+        m_filter[PT_FILTER_RESOLUTION] = 0.0f;
+        m_lookupFactor = PT_FILTER_RESOLUTION / m_filterRadius;
+        int weightSize = (int)std::ceil(2 * m_filterRadius) + 1;
+        m_weightsX = new float[weightSize];
+        m_weightsY = new float[weightSize];
+        memset(m_weightsX, 0, sizeof(float) * weightSize);
+        memset(m_weightsY, 0, sizeof(float) * weightSize);
+    }
+
     /* Allocate space for pixels and border regions */
-    resize(size.y() + 2*m_borderSize, size.x() + 2*m_borderSize);
+    resize(size.y() + 2 * m_borderSize, size.x() + 2 * m_borderSize);
 }
 
-ImageBlock::~ImageBlock() { }
+ImageBlock::~ImageBlock() {
+    delete[] m_filter;
+    delete[] m_weightsX;
+    delete[] m_weightsY;
+}
 
 Bitmap *ImageBlock::toBitmap() const {
     Bitmap *result = new Bitmap(m_size);
@@ -35,15 +57,29 @@ void ImageBlock::fromBitmap(const Bitmap &bitmap) {
             coeffRef(y, x) << bitmap.coeff(y, x), 1;
 }
 
-void ImageBlock::put(const Vector2f &pos_f, const Color3f &value) {
+void ImageBlock::put(const Vector2f &globalPos, const Color3f &value) {
     if (!value.isValid()) {
         /* If this happens, go fix your code instead of removing this warning ;) */
         cerr << "Integrator: computed an invalid radiance value: " << value.toString() << endl;
         return;
     }
 
-    Vector2i pos = pos_f.cast<int>() - m_offset - Vector2i(m_borderSize);
-    coeffRef(pos.y(), pos.x()) += Color4f(value);
+    /* Compute the rectangle of pixels that will need to be updated */
+    Vector2f localPos = globalPos - m_offset.cast<float>() - Vector2f(m_borderSize);
+    int boundMinX = std::max(int(std::ceil(localPos.x() - m_filterRadius)), 0);
+    int boundMinY = std::max(int(std::ceil(localPos.y() - m_filterRadius)), 0);
+    int boundMaxX = std::min(int(std::floor(localPos.x() + m_filterRadius)), int(cols() - 1));
+    int boundMaxY = std::min(int(std::floor(localPos.y() + m_filterRadius)), int(rows() - 1));
+
+    /* Lookup values from the pre-rasterized filter */
+    for (int x = boundMinX, idx = 0; x <= boundMaxX; ++x, ++idx)
+        m_weightsX[idx] = m_filter[(int)(std::abs(x - localPos.x()) * m_lookupFactor)];
+    for (int y = boundMinY, idx = 0; y <= boundMaxY; ++y, ++idx)
+        m_weightsY[idx] = m_filter[(int)(std::abs(y - localPos.y()) * m_lookupFactor)];
+
+    for (int y = boundMinY, yr = 0; y <= boundMaxY; ++y, ++yr)
+        for (int x = boundMinX, xr = 0; x <= boundMaxX; ++x, ++xr)
+            coeffRef(y, x) += Color4f(value) * m_weightsX[xr] * m_weightsY[yr];
 }
     
 void ImageBlock::put(ImageBlock &b) {
