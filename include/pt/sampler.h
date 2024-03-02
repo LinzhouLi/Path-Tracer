@@ -14,9 +14,9 @@ extern const uint32_t SobolMatrices32[NSobolDimensions * SobolMatrixSize];
 extern const uint64_t VdCSobolMatrices[][SobolMatrixSize];
 extern const uint64_t VdCSobolMatricesInv[][SobolMatrixSize];
 
-inline float sobolSample(int64_t a, int dimension);
+extern inline float sobolSample(int64_t a, int dimension);
 
-inline uint64_t sobolIntervalToIndex(uint32_t m, uint64_t frame, pt::Vector2i p);
+extern inline uint64_t sobolIntervalToIndex(uint32_t m, uint64_t frame, pt::Vector2i p);
 
 }
 
@@ -32,11 +32,13 @@ public:
 
     virtual void startBlockSample(const Vector2i& offset) = 0;
 
-    virtual void startPixelSample(const Vector2i& p, int sampleIndex, int dim = 0) = 0;
+    virtual void startPixelSample(const Vector2i& p, int sampleIndex) = 0;
 
 	virtual inline float sample1D() = 0;
 
 	virtual inline Vector2f sample2D() = 0;
+
+    virtual inline Vector2f samplePixel2D() = 0;
 
 protected:
     uint32_t m_spp;
@@ -58,7 +60,7 @@ public:
         m_random.seed(offset.x(), offset.y());
     }
 
-    void startPixelSample(const Vector2i& p, int sampleIndex, int dim = 0) { }
+    void startPixelSample(const Vector2i& p, int sampleIndex) { }
 
     inline float sample1D() { 
         return m_random.nextFloat(); 
@@ -71,6 +73,8 @@ public:
         );
     }
 
+    inline Vector2f samplePixel2D() { return sample2D(); }
+
 private:
     pcg32 m_random;
 };
@@ -78,17 +82,19 @@ private:
 
 class SobolSampler : public Sampler {
 public:
-    SobolSampler(uint32_t spp, Vector2i screenSize);
+    SobolSampler(uint32_t spp, Vector2i resolution);
 
     std::unique_ptr<Sampler> clone() const;
 
     void startBlockSample(const Vector2i& offset) { }
 
-    void startPixelSample(const Vector2i& p, int sampleIndex, int dim);
+    void startPixelSample(const Vector2i& p, int sampleIndex);
 
     inline float sample1D();
 
     inline Vector2f sample2D();
+
+    inline Vector2f samplePixel2D();
 
 private:
     float sampleDimension(int dimension) const { return sobol::sobolSample(m_sobolIndex, dimension); }

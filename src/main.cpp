@@ -29,7 +29,7 @@ static void renderBlock(Scene* scene, Sampler* sampler, ImageBlock& block) {
             for (uint32_t s = 0; s < sampler->getSPP(); s++) {
                 Vector2i pixel = Vector2i(x, y) + offset;
                 sampler->startPixelSample(pixel, s);
-                Vector2f pixelSample = pixel.cast<float>() + sampler->sample2D();
+                Vector2f pixelSample = pixel.cast<float>() + sampler->samplePixel2D();
 
                 Ray ray = scene->getCamera()->sampleRay(pixelSample);
                 Color3f value = scene->getIntegrator()->Li(scene, sampler, ray);

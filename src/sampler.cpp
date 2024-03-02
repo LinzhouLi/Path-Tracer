@@ -86,16 +86,16 @@ inline constexpr int64_t roundUpPow2(int64_t v) {
     return v + 1;
 }
 
-SobolSampler::SobolSampler(uint32_t spp, Vector2i screenSize) : Sampler(spp) {
+SobolSampler::SobolSampler(uint32_t spp, Vector2i resolution) : Sampler(spp) {
     m_sobolIndex = 0;
     m_dimension = 0;
-    m_scale = roundUpPow2(std::max(screenSize.x(), screenSize.y()));
+    m_scale = roundUpPow2(std::max(resolution.x(), resolution.y()));
     m_pixel = Vector2i();
 }
 
-void SobolSampler::startPixelSample(const Vector2i& p, int sampleIndex, int dim) {
+void SobolSampler::startPixelSample(const Vector2i& p, int sampleIndex) {
     m_pixel = p;
-    m_dimension = std::max(2, dim);
+    m_dimension = 2;
     m_sobolIndex = sobol::sobolIntervalToIndex(log2int(m_scale), sampleIndex, m_pixel);
 }
 
@@ -110,7 +110,16 @@ inline Vector2f SobolSampler::sample2D() {
         m_dimension = 2;
     Vector2f u(sampleDimension(m_dimension), sampleDimension(m_dimension + 1));
     m_dimension += 2;
+    return u;
+}
 
+inline Vector2f SobolSampler::samplePixel2D() {
+    Vector2f u(sampleDimension(0), sampleDimension(1));
+    // Remap Sobol\+$'$ dimensions used for pixel samples
+    for (int dim = 0; dim < 2; ++dim) {
+        //u[dim] = clamp(u[dim] * m_scale - m_pixel[dim], 0.0f, sobol::FloatOneMinusEpsilon);
+        u[dim] = clamp(u[dim], 0.0f, sobol::FloatOneMinusEpsilon);
+    }
     return u;
 }
 

@@ -237,8 +237,8 @@ void Scene::preprocess() {
 	m_integrator->preprocess(this);
 
 	// create sampler
-	//m_sampler = new SobolSampler(m_spp, m_camera->getScreenSize());
-	m_sampler = new IndependentSampler(m_spp);
+	m_sampler = new SobolSampler(m_spp, m_camera->getScreenSize());
+	//m_sampler = new IndependentSampler(m_spp);
 }
 
 void Scene::createPrimitives() {
@@ -261,7 +261,7 @@ void Scene::createAreaLights() {
 			}
 		}
 	}
-	cout << m_lights.size() << endl;
+	cout << "Create " << m_lights.size() << " area lights!" << endl;
 }
 
 }

@@ -16,7 +16,7 @@
 
 namespace pt {
 
-#define PIXEL_RATIO 1.0 // fix pixel ratio problem
+#define PIXEL_RATIO 1.75 // fix pixel ratio problem
 
 GUI::GUI(const ImageBlock &block) : 
     nanogui::Screen(

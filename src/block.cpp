@@ -43,9 +43,7 @@ void ImageBlock::put(const Vector2f &pos_f, const Color3f &value) {
     }
 
     Vector2i pos = pos_f.cast<int>() - m_offset - Vector2i(m_borderSize);
-    int x = clamp(pos.x(), 0, m_size.x() - 1); // some numerical error without clamp maximum value
-    int y = clamp(pos.y(), 0, m_size.y() - 1);
-    coeffRef(y, x) += Color4f(value);
+    coeffRef(pos.y(), pos.x()) += Color4f(value);
 }
     
 void ImageBlock::put(ImageBlock &b) {
