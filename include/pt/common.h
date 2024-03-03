@@ -91,6 +91,7 @@ class Transform;
 class Triangle;
 class AreaLight;
 class Filter;
+class TangentSpace;
 
 
 /// Import cout, cerr, endl for debugging purposes
