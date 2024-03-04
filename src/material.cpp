@@ -82,14 +82,13 @@ BRDFSample Material::sampleBRDF(const Vector3f& wo, float uc, const Vector2f& u,
 
 	// specular pdf
 	float cosRV = std::max(wi.dot(r), 0.0f);
-	float normalization = (m_shininess + 2.0f) * INV_TWOPI;
-	float pdf_spec = normalization * std::powf(cosRV, m_shininess);
+	float pdf_spec = (m_shininess + 1.0f) * INV_TWOPI * std::powf(cosRV, m_shininess);
 
 	// diffuse pdf
 	float pdf_diff = cosTheta * INV_PI;
 
 	// BRDF value
-	Vector3f f = getBaseColor(its.uv) * INV_PI + m_specular * pdf_spec;
+	Vector3f f = getBaseColor(its.uv) * INV_PI + m_specular * (m_shininess + 2.0f) * INV_TWOPI * std::powf(cosRV, m_shininess);
 
 	float pdf = specProb * pdf_spec + (1 - specProb) * pdf_diff;
 	return BRDFSample(wi, pdf, f);
