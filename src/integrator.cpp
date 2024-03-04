@@ -35,7 +35,7 @@ Color3f BaseColorIntegrator::Li(Scene* scene, Sampler* sampler, const Ray& ray) 
 }
 
 Color3f PathIntegrator::Li(Scene* scene, Sampler* sampler, const Ray& ray_) const {
-	Vector3f L(0.0), beta(1.0);
+	Vector3f L(0.0), accThroughput(1.0);
 	Ray ray(ray_);
 
 	for(int bounce = 0; bounce < 3; bounce++) {
@@ -45,18 +45,18 @@ Color3f PathIntegrator::Li(Scene* scene, Sampler* sampler, const Ray& ray_) cons
 
 		Vector3f wo = -ray.dir;
 		if (bounce == 0) {
-			L += beta.cwiseProduct(its.Le(wo));
+			L += accThroughput.cwiseProduct(its.Le(wo));
 		}
 
 		// sample light
 		Vector3f Ld = sampleLd(scene, sampler, its, wo);
-		L += beta.cwiseProduct(Ld);
+		L += accThroughput.cwiseProduct(Ld);
 
 		// sample BRDF
 		BRDFSample bs = its.sampleBRDF(wo, sampler->sample1D(), sampler->sample2D());
 		if (bs.f.squaredNorm() == 0.0f || bs.pdf == 0.0f) break;
 		Vector3f throughput =  bs.f * its.n.dot(bs.wi) / bs.pdf;
-		beta = beta.cwiseProduct(throughput);
+		accThroughput = accThroughput.cwiseProduct(throughput);
 
 		// new ray
 		ray = its.genRay(bs.wi);
