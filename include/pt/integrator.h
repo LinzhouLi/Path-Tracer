@@ -36,6 +36,9 @@ public:
 	}
 
 	Color3f Li(Scene* scene, Sampler* sampler, const Ray& ray) const;
+
+private:
+	Vector3f sampleLd(Scene* scene, Sampler* sampler, const Intersection& its, const Vector3f& wo) const;
 };
 
 }

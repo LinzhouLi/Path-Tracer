@@ -50,7 +50,10 @@ public:
     Material* getMaterial(const uint32_t material_id);
 
     // Get material by intersection
-    Material* getMaterial(const Intersection& its);
+    //Material* getMaterial(const Intersection& its);
+
+    // Get all Lights
+    const std::vector<AreaLight*>& getLights() const { return m_lights; }
 
     // Ray intersect with scene (use accelration struction)
     bool rayIntersect(const Ray& ray, Intersection& its) const;
@@ -69,9 +72,6 @@ public:
 
     // Get filter
     Filter* getFilter() { return m_filter; }
-
-    // Uniform sample lights
-    Vector3f uniformSampleLights(const Intersection& its, Sampler* sampler);
 
 private:
     void createPrimitives();

@@ -193,9 +193,9 @@ Material* Scene::getMaterial(const std::string& material_name) {
 	return nullptr;
 }
 
-Material* Scene::getMaterial(const Intersection& its) {
-	return m_materials[its.getShape()->getMaterialId()];
-}
+//Material* Scene::getMaterial(const Intersection& its) {
+//	return m_materials[its.getShape()->getMaterialId()];
+//}
 
 TriangleMesh* Scene::getMesh(const uint32_t mesh_id) {
 	if (mesh_id >= 0 && mesh_id < m_meshes.size())
@@ -249,8 +249,10 @@ void Scene::createPrimitives() {
 	uint32_t total_triangles = 0;
 	for (uint32_t i = 0; i < m_meshes.size(); i++) {
 		total_triangles += m_meshes[i]->getTriangleCount();
-		for (uint32_t j = 0; j < m_meshes[i]->getTriangleCount(); j++)
-			m_shapes.push_back(new Triangle(j, m_meshes[i]));
+		for (uint32_t j = 0; j < m_meshes[i]->getTriangleCount(); j++) {
+			uint32_t mtl_id = m_meshes[i]->getMaterialId(j);
+			m_shapes.push_back(new Triangle(j, m_meshes[i], m_materials[mtl_id]));
+		}
 	}
 	cout << "Create " << total_triangles << " primitives!" << endl;
 }
@@ -258,7 +260,7 @@ void Scene::createPrimitives() {
 void Scene::createAreaLights() {
 	for (LightInfo& info : m_light_infos) {
 		for (Triangle* shape : m_shapes) {
-			if (getMaterial(shape->getMaterialId())->getName() == info.mtl_name) {
+			if (shape->getMaterial()->getName() == info.mtl_name) {
 				AreaLight* light = new AreaLight(shape, info.radiance);
 				m_lights.push_back(light);
 				shape->setLight(light);

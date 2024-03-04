@@ -4,6 +4,7 @@
 #include <pt/aabb.h>
 #include <pt/ray.h>
 #include <pt/light.h>
+#include <pt/material.h>
 
 namespace pt {
 
@@ -22,10 +23,10 @@ bool Triangle::getUV(Vector2f& uv0, Vector2f& uv1, Vector2f& uv2) const {
 	return mesh->getUV(m_triangle_id, uv0, uv1, uv2);
 }
 
-uint32_t Triangle::getMaterialId() const {
-	TriangleMesh* mesh = getMesh();
-	return mesh->getMaterialId(m_triangle_id);
-}
+//uint32_t Triangle::getMaterialId() const {
+//	TriangleMesh* mesh = getMesh();
+//	return mesh->getMaterialId(m_triangle_id);
+//}
 
 
 float Triangle::surfaceArea() const {
@@ -111,13 +112,15 @@ void Intersection::complete() {
 	p = v0 * m_bary.x() + v1 * m_bary.y() + v2 * m_bary.z();
 
 	// normal
-	n = geo_n = ((v0 - v2).cross(v1 - v2)).normalized();
+	n = ((v0 - v2).cross(v1 - v2)).normalized();
 	Vector3f n0, n1, n2;
 	if (m_shape->getNormal(n0, n1, n2)) {
 		n = n0 * m_bary.x() + n1 * m_bary.y() + n2 * m_bary.z();
-		if (n.norm() > 0) n.normalize(); 
-		else n = geo_n; // invalid when normal length == 0 (this should be checked when mesh loading)
+		n.normalize();
 	}
+
+	// tangent
+	ts = TangentSpace(n);
 
 	// uv
 	Vector2f uv0(0.0f, 0.0f), uv1(1.0f, 0.0f), uv2(1.0f, 1.0f);
@@ -129,6 +132,14 @@ Vector3f Intersection::Le(const Vector3f& w) const {
 	AreaLight* light = m_shape->getLight();
 	if (light) return light->L(n, w);
 	else return Vector3f(0.0f, 0.0f, 0.0f);
+}
+
+Vector3f Intersection::BRDF(const Vector3f& wo, const Vector3f& wi) const {
+	return m_shape->getMaterial()->BRDF(wo, wi, *this);
+}
+
+BRDFSample Intersection::sampleBRDF(const Vector3f& wo, float uc, const Vector2f& u) const {
+	return m_shape->getMaterial()->sampleBRDF(wo, uc, u, *this);
 }
 
 }
