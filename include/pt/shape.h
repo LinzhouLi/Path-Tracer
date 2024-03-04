@@ -77,6 +77,8 @@ public:
 
 	BRDFSample sampleBRDF(const Vector3f& wo, float uc, const Vector2f& u) const;
 
+	Ray genRay(const Vector3f& w) const;
+
 	Vector3f p;
 	Vector3f n; // shading normal
 	Vector2f uv;

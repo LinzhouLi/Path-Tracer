@@ -34,21 +34,32 @@ Color3f BaseColorIntegrator::Li(Scene* scene, Sampler* sampler, const Ray& ray) 
 		return Color3f(0, 0, 0);
 }
 
-Color3f PathIntegrator::Li(Scene* scene, Sampler* sampler, const Ray& ray) const {
+Color3f PathIntegrator::Li(Scene* scene, Sampler* sampler, const Ray& ray_) const {
 	Vector3f L(0.0), beta(1.0);
+	Ray ray(ray_);
 
-	for(int bounce = 0; bounce < 1; bounce++) {
+	for(int bounce = 0; bounce < 3; bounce++) {
 		Intersection its;
 		bool hit = scene->rayIntersect(ray, its);
 		if (!hit) break;
 
+		Vector3f wo = -ray.dir;
 		if (bounce == 0) {
-			L += beta.cwiseProduct(its.Le(-ray.dir));
+			L += beta.cwiseProduct(its.Le(wo));
 		}
 
 		// sample light
-		Vector3f Ld = sampleLd(scene, sampler, its, -ray.dir);
+		Vector3f Ld = sampleLd(scene, sampler, its, wo);
 		L += beta.cwiseProduct(Ld);
+
+		// sample BRDF
+		BRDFSample bs = its.sampleBRDF(wo, sampler->sample1D(), sampler->sample2D());
+		if (bs.f.squaredNorm() == 0.0f || bs.pdf == 0.0f) break;
+		Vector3f throughput =  bs.f * its.n.dot(bs.wi) / bs.pdf;
+		beta = beta.cwiseProduct(throughput);
+
+		// new ray
+		ray = its.genRay(bs.wi);
 	}
 
 	return Color3f(L.x(), L.y(), L.z());

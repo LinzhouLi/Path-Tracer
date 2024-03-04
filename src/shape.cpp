@@ -5,6 +5,7 @@
 #include <pt/ray.h>
 #include <pt/light.h>
 #include <pt/material.h>
+#include <pt/ray.h>
 
 namespace pt {
 
@@ -140,6 +141,11 @@ Vector3f Intersection::BRDF(const Vector3f& wo, const Vector3f& wi) const {
 
 BRDFSample Intersection::sampleBRDF(const Vector3f& wo, float uc, const Vector2f& u) const {
 	return m_shape->getMaterial()->sampleBRDF(wo, uc, u, *this);
+}
+
+Ray Intersection::genRay(const Vector3f& w) const {
+	Vector3f p_ = p + n * Epsilon;
+	return Ray(p_, w, 0);
 }
 
 }

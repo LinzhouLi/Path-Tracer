@@ -93,7 +93,7 @@ int main(int argc, char **argv) {
     threadCount = tbb::task_scheduler_init::automatic;
     tbb::task_scheduler_init init(threadCount);
 
-    Scene scene(64); // spp
+    Scene scene(32); // spp
     scene.loadOBJ("D:/code/Rendering/Path-Tracer/scenes/cornell-box/cornell-box.obj");
     scene.loadXML("D:/code/Rendering/Path-Tracer/scenes/cornell-box/cornell-box.xml");
     scene.preprocess();
