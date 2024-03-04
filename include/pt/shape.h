@@ -33,6 +33,9 @@ public:
 	// Sample a point on triangle
 	TriangleSample sample(const Vector2f& u) const;
 
+	// PDF
+	float pdf() const { return 1.0 / surfaceArea(); }
+
 	// Get geometry infomation
 	void getVertex(Vector3f& v0, Vector3f& v1, Vector3f& v2) const;
 	bool getNormal(Vector3f& n0, Vector3f& n1, Vector3f& n2) const;
@@ -69,6 +72,8 @@ public:
 
 	const Material* getMaterial() const { return m_shape->getMaterial(); }
 
+	const AreaLight* getLight() const { return m_shape->getLight(); }
+
 	void complete();
 
 	Vector3f Le(const Vector3f& w) const;
@@ -76,6 +81,8 @@ public:
 	Vector3f BRDF(const Vector3f& wo, const Vector3f& wi) const;
 
 	BRDFSample sampleBRDF(const Vector3f& wo, float uc, const Vector2f& u) const;
+
+	float pdfBRDF(const Vector3f& wo, const Vector3f& wi) const;
 
 	Ray genRay(const Vector3f& w) const;
 

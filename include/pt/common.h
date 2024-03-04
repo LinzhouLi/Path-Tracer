@@ -132,4 +132,9 @@ inline int clamp(int value, int min, int max) {
     else return value;
 }
 
+template <typename T>
+inline T mix(const T& a, const T& b, float f) {
+    return a * (1.0 - f) + b * f;
+}
+
 }

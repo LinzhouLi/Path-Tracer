@@ -11,6 +11,11 @@
 
 namespace pt {
 
+inline float powerHeuristic(float f, float g) {
+	float f2 = f * f, g2 = g * g;
+	return f2 / (f2 + g2);
+}
+
 Color3f GeometryIntegrator::Li(Scene* scene, Sampler* sampler, const Ray& ray) const {
 	Intersection its;
 	bool hit = scene->rayIntersect(ray, its);
@@ -37,15 +42,26 @@ Color3f BaseColorIntegrator::Li(Scene* scene, Sampler* sampler, const Ray& ray) 
 Color3f PathIntegrator::Li(Scene* scene, Sampler* sampler, const Ray& ray_) const {
 	Vector3f L(0.0), accThroughput(1.0);
 	Ray ray(ray_);
+	float brdf_pdf;
 
-	for(int bounce = 0; bounce < 3; bounce++) {
+	for(int bounce = 0; bounce < 1; bounce++) {
 		Intersection its;
 		bool hit = scene->rayIntersect(ray, its);
 		if (!hit) break;
 
 		Vector3f wo = -ray.dir;
-		if (bounce == 0) {
-			L += accThroughput.cwiseProduct(its.Le(wo));
+
+		// hit light
+		const AreaLight* light = its.getLight();
+		if (light) {
+			Vector3f Le = its.Le(wo);
+			if (bounce == 0) L += accThroughput.cwiseProduct(Le);
+			else {
+				float light_pdf = light->pdf(its, ray);
+				light_pdf *= 1.0 / scene->getLights().size(); // select pdf
+				float misWeight = powerHeuristic(brdf_pdf, light_pdf);
+				L += misWeight * accThroughput.cwiseProduct(Le);
+			}
 		}
 
 		// sample light
@@ -57,6 +73,7 @@ Color3f PathIntegrator::Li(Scene* scene, Sampler* sampler, const Ray& ray_) cons
 		if (bs.f.squaredNorm() == 0.0f || bs.pdf == 0.0f) break;
 		Vector3f throughput =  bs.f * its.n.dot(bs.wi) / bs.pdf;
 		accThroughput = accThroughput.cwiseProduct(throughput);
+		brdf_pdf = bs.pdf;
 
 		// new ray
 		ray = its.genRay(bs.wi);
@@ -65,7 +82,7 @@ Color3f PathIntegrator::Li(Scene* scene, Sampler* sampler, const Ray& ray_) cons
 	return Color3f(L.x(), L.y(), L.z());
 }
 
-Vector3f PathIntegrator::sampleLd(Scene* scene, Sampler* sampler, const Intersection& its, const Vector3f& wo) const {
+Vector3f PathIntegrator::sampleLd(Scene* scene, Sampler* sampler, const Intersection& surfIts, const Vector3f& wo) const {
 	const std::vector<AreaLight*>& lights = scene->getLights();
 	int nLights = lights.size();
 	if (lights.empty())
@@ -77,32 +94,26 @@ Vector3f PathIntegrator::sampleLd(Scene* scene, Sampler* sampler, const Intersec
 	AreaLight* light = lights[lightIndex];
 
 	// sample a point on the light source (sample a triangle)
-	TriangleSample light_its = light->sampleLi(sampler->sample2D());
+	LightSample lightIts = light->sampleLi(surfIts, sampler->sample2D());
+	if (lightIts.pdf == 0.0f)
+		return Vector3f(0.0);
 
 	// visibility test
-	if (!scene->unocculded(its.p, light_its.p, its.n, light_its.n))
+	if (!scene->unocculded(surfIts.p, surfIts.p, lightIts.n, lightIts.n))
 		return Vector3f(0.0);
-
-	// ray from the intersection point to the light source
-	Vector3f wi = light_its.p - its.p;
-	float distance = wi.norm();
-	if (distance == 0.0)
-		return Vector3f(0.0);
-	wi /= distance;
-
-	// light radiance
-	Vector3f Li = light->L(light_its.n, -wi);
-	if (Li.squaredNorm() == 0.0)
-		return Vector3f(0.0);
-
-	// light solid angle pdf
-	float solidAnglePdf = light_its.pdf * distance / light_its.n.dot(-wi); // pdf_area * r^2 / cos_theta
+	Vector3f& wi = lightIts.wi;
+	Vector3f& Le = lightIts.Le;
 
 	// phong BRDF
-	Vector3f f = its.BRDF(wo, wi);
-	float cosTheta = its.n.dot(wi);
+	Vector3f f = surfIts.BRDF(wo, wi);
+	float cosTheta = surfIts.n.dot(wi);
 
-	return f.cwiseProduct(Li) * cosTheta / (solidAnglePdf * selectPdf);
+	// light mis
+	float brdf_pdf = surfIts.pdfBRDF(wo, wi);
+	float light_pdf = lightIts.pdf * selectPdf;
+	float misWeight = powerHeuristic(light_pdf, brdf_pdf);
+
+	return misWeight * f.cwiseProduct(Le) * cosTheta / light_pdf;
 }
 
 }

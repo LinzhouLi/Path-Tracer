@@ -39,6 +39,7 @@ GUI::GUI(const ImageBlock &block) :
             m_scale = std::pow(2.f, (value - 0.5f) * 20);
         }
     );
+    slider->callback();
 
     panel->set_size(nanogui::Vector2i(block.getSize().x(), block.getSize().y()));
     perform_layout();

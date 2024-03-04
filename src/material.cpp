@@ -39,8 +39,8 @@ Vector3f Material::getBaseColor(const Vector2f& uv) const {
 
 Vector3f Material::BRDF(const Vector3f& wo, const Vector3f& wi, const Intersection& its) const {
 	// not on the same hemisphere
-	float cosTheta = wi.dot(its.n);
-	if (cosTheta < 0.0f) return Vector3f(0.0f);
+	//float cosTheta = wi.dot(its.n);
+	//if (cosTheta < 0.0f) return Vector3f(0.0f);
 
 	// compute lambert diffuse
 	Vector3f diffuse = getBaseColor(its.uv) * INV_PI;
@@ -82,16 +82,34 @@ BRDFSample Material::sampleBRDF(const Vector3f& wo, float uc, const Vector2f& u,
 
 	// specular pdf
 	float cosRV = std::max(wi.dot(r), 0.0f);
-	float pdf_spec = (m_shininess + 1.0f) * INV_TWOPI * std::powf(cosRV, m_shininess);
+	float powRV = std::powf(cosRV, m_shininess);
+	float pdf_spec = (m_shininess + 1.0f) * INV_TWOPI * powRV;
 
 	// diffuse pdf
 	float pdf_diff = cosTheta * INV_PI;
 
 	// BRDF value
-	Vector3f f = getBaseColor(its.uv) * INV_PI + m_specular * (m_shininess + 2.0f) * INV_TWOPI * std::powf(cosRV, m_shininess);
+	Vector3f f = getBaseColor(its.uv) * INV_PI + m_specular * (m_shininess + 2.0f) * INV_TWOPI * powRV;
 
-	float pdf = specProb * pdf_spec + (1 - specProb) * pdf_diff;
+	float pdf = mix(pdf_diff, pdf_spec, specProb);
 	return BRDFSample(wi, pdf, f);
+}
+
+float Material::pdf(const Vector3f& wo, const Vector3f& wi, const Intersection& its) const {
+	float sumKd = m_diffuse.sum();
+	float sumKs = m_specular.sum();
+	float specProb = sumKs / (sumKd + sumKs);
+	Vector3f r = reflect(wo, its.n);
+
+	// specular pdf
+	float cosRV = std::max(wi.dot(r), 0.0f);
+	float pdf_spec = (m_shininess + 1.0f) * INV_TWOPI * std::powf(cosRV, m_shininess);
+
+	// diffuse pdf
+	float cosTheta = wi.dot(its.n);
+	float pdf_diff = cosTheta * INV_PI;
+
+	return mix(pdf_diff, pdf_spec, specProb);
 }
 
 }

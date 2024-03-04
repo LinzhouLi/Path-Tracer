@@ -4,6 +4,8 @@
 
 namespace pt {
 
+struct LightSample;
+
 class Integrator {
 public:
 	virtual void preprocess(Scene* scene) { }
@@ -39,6 +41,7 @@ public:
 
 private:
 	Vector3f sampleLd(Scene* scene, Sampler* sampler, const Intersection& its, const Vector3f& wo) const;
+
 };
 
 }

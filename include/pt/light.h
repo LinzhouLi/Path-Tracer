@@ -4,7 +4,18 @@
 
 namespace pt {
 
-class TriangleSample;
+struct LightSample {
+	LightSample(
+		const Vector3f& Le_ = Vector3f(), const Vector3f& wi_ = Vector3f(), 
+		const Vector3f& p_ = Vector3f(), const Vector3f& n_ = Vector3f(), float pdf_ = 0.0f) :
+		Le(Le_), wi(wi_), p(p_), n(n_), pdf(pdf_) { }
+
+	Vector3f Le;
+	Vector3f wi;
+	Vector3f p;
+	Vector3f n;
+	float pdf; // area measure
+};
 
 class AreaLight {
 public:
@@ -15,7 +26,9 @@ public:
 
 	Vector3f power() const { return m_area * m_lemit * M_PI; }
 
-	TriangleSample sampleLi(const Vector2f& u) const;
+	LightSample sampleLi(const Intersection& surfIts, const Vector2f& u) const;
+
+	float pdf(const Intersection& lightIts, const Ray& ray) const;
 
 private:
 	Triangle* m_shape;

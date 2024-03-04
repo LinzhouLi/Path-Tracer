@@ -147,10 +147,24 @@ void Bitmap::savePNG(const std::string &filename) {
     delete[] rgb8;
 }
 
-Color3f Bitmap::sample(const Vector2f& uv) const { // TODO: bilinear interpolation
-    int x = clamp(int(uv.x() * cols()), 0, cols()),
-        y = clamp(int(uv.y() * rows()), 0, rows());
-    return coeff(y, x);
+Color3f Bitmap::sample(const Vector2f& uv) const {
+    // nearest interpolation
+    //int x = clamp(int(uv.x() * cols()), 0, cols() - 1),
+    //    y = clamp(int(uv.y() * rows()), 0, rows() - 1);
+    //return coeff(y, x);
+
+    // bilinear interpolation
+    float s = std::max(uv.x() * cols() - 0.5f, 0.0f);
+    float t = std::max(uv.y() * rows() - 0.5f, 0.0f);
+    int x0 = s;
+    int y0 = t;
+    int x1 = std::min(x0 + 1, int(cols() - 1));
+    int y1 = std::min(y0 + 1, int(rows() - 1));
+    float alpha = s - x0;
+    float beta = t - y0;
+    Color3f a = mix(coeff(y0, x0), coeff(y0, x1), alpha);
+    Color3f b = mix(coeff(y1, x0), coeff(y1, x1), alpha);
+    return mix(a, b, beta);
 }
 
 }

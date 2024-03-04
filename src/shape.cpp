@@ -143,6 +143,10 @@ BRDFSample Intersection::sampleBRDF(const Vector3f& wo, float uc, const Vector2f
 	return m_shape->getMaterial()->sampleBRDF(wo, uc, u, *this);
 }
 
+float Intersection::pdfBRDF(const Vector3f& wo, const Vector3f& wi) const {
+	return m_shape->getMaterial()->pdf(wo, wi, *this);
+}
+
 Ray Intersection::genRay(const Vector3f& w) const {
 	Vector3f p_ = p + n * Epsilon;
 	return Ray(p_, w, 0);

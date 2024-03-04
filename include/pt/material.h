@@ -43,6 +43,8 @@ public:
 
 	BRDFSample sampleBRDF(const Vector3f& wo, float uc, const Vector2f& u, const Intersection& its) const;
 
+	float pdf(const Vector3f& wo, const Vector3f& wi, const Intersection& its) const;
+
 private:
 	std::string m_name;
 
