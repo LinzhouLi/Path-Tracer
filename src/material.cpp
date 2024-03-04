@@ -56,6 +56,9 @@ Vector3f Material::BRDF(const Vector3f& wo, const Vector3f& wi, const Intersecti
 }
 
 BRDFSample Material::sampleBRDF(const Vector3f& wo, float uc, const Vector2f& u, const Intersection& its) const {
+	/**
+	* Lafortune, Eric P. and Yves D. Willems. “Using the modified Phong reflectance model for physically based rendering.” (1994).
+	*/
 	float sumKd = m_diffuse.sum();
 	float sumKs = m_specular.sum();
 	float specProb = sumKs / (sumKd + sumKs);
