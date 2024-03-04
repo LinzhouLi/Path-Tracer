@@ -24,7 +24,7 @@ Vector3f samplePhongSpecularLobe(const Vector2f& u, float s) {
 	float cos_theta = std::powf(u.x(), 1.0f / (s + 1.0f));
 	float sin_theta = std::sqrt(1.0f - cos_theta * cos_theta);
 	float phi = 2.0f * M_PI * u.y();
-	return Vector3f(sin_theta * std::cos(phi), sin_theta * std::cos(phi), cos_theta);
+	return Vector3f(sin_theta * std::cos(phi), sin_theta * std::sin(phi), cos_theta);
 }
 
 

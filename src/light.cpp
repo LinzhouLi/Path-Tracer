@@ -33,7 +33,7 @@ LightSample AreaLight::sampleLi(const Intersection& surfIts, const Vector2f& u) 
 }
 
 float AreaLight::pdf(const Intersection& lightIts, const Ray& ray) const {
-	float distance =(lightIts.p - ray.org).norm();
+	float distance = (lightIts.p - ray.org).norm();
 	float cos_lw = lightIts.n.dot(-ray.dir);
 	return m_shape->pdf() * distance * distance / cos_lw;
 }
