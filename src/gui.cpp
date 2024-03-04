@@ -32,7 +32,7 @@ GUI::GUI(const ImageBlock &block) :
     panel->set_layout(new BoxLayout(Orientation::Horizontal, Alignment::Middle, 10, 10));
     new Label(panel, "Exposure value: ", "sans-bold");
     Slider *slider = new Slider(panel);
-    slider->set_value(0.05f);
+    slider->set_value(0.5f);
     slider->set_fixed_width(150);
     slider->set_callback(
         [&](float value) {

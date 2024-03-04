@@ -44,7 +44,7 @@ Color3f PathIntegrator::Li(Scene* scene, Sampler* sampler, const Ray& ray_) cons
 	Ray ray(ray_);
 	float brdf_pdf;
 
-	for(int bounce = 0; bounce < 1; bounce++) {
+	for(int bounce = 0; bounce < 3; bounce++) {
 		Intersection its;
 		bool hit = scene->rayIntersect(ray, its);
 		if (!hit) break;
@@ -60,7 +60,7 @@ Color3f PathIntegrator::Li(Scene* scene, Sampler* sampler, const Ray& ray_) cons
 				float light_pdf = light->pdf(its, ray);
 				light_pdf *= 1.0 / scene->getLights().size(); // select pdf
 				float misWeight = powerHeuristic(brdf_pdf, light_pdf);
-				L += misWeight * accThroughput.cwiseProduct(Le);
+				L += misWeight * accThroughput.cwiseProduct(Le); // brdf mis
 			}
 		}
 
@@ -70,13 +70,20 @@ Color3f PathIntegrator::Li(Scene* scene, Sampler* sampler, const Ray& ray_) cons
 
 		// sample BRDF
 		BRDFSample bs = its.sampleBRDF(wo, sampler->sample1D(), sampler->sample2D());
-		if (bs.f.squaredNorm() == 0.0f || bs.pdf == 0.0f) break;
+		if (bs.f.squaredNorm() == 0.0f || bs.pdf == 0.0f) break; // no enerage
 		Vector3f throughput =  bs.f * its.n.dot(bs.wi) / bs.pdf;
 		accThroughput = accThroughput.cwiseProduct(throughput);
 		brdf_pdf = bs.pdf;
 
 		// new ray
 		ray = its.genRay(bs.wi);
+
+		// possibly terminate the path with Russian roulette
+		if (accThroughput.maxCoeff() < 1.0f && bounce > 1) {
+			float q = std::max(0.0f, 1.0f - accThroughput.maxCoeff());
+			if (sampler->sample1D() < q) break;
+			accThroughput /= (1.0f - q);
+		}
 	}
 
 	return Color3f(L.x(), L.y(), L.z());
