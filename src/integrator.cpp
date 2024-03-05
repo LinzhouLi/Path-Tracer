@@ -44,7 +44,7 @@ Color3f PathIntegrator::Li(Scene* scene, Sampler* sampler, const Ray& ray_) cons
 	Ray ray(ray_);
 	float brdf_pdf;
 
-	for(int bounce = 0; bounce < 3; bounce++) {
+	for(int bounce = 0; bounce < 16; bounce++) {
 		Intersection its;
 		bool hit = scene->rayIntersect(ray, its);
 		if (!hit) break;
@@ -106,7 +106,7 @@ Vector3f PathIntegrator::sampleLd(Scene* scene, Sampler* sampler, const Intersec
 		return Vector3f(0.0);
 
 	// visibility test
-	if (!scene->unocculded(surfIts.p, surfIts.p, lightIts.n, lightIts.n))
+	if (!scene->unocculded(surfIts.p, lightIts.p, surfIts.n, lightIts.n))
 		return Vector3f(0.0);
 	Vector3f& wi = lightIts.wi;
 	Vector3f& Le = lightIts.Le;
