@@ -98,7 +98,6 @@ int main(int argc, char **argv) {
     scene.loadXML("D:/code/Rendering/Path-Tracer/scenes/veach-mis/veach-mis.xml");
     scene.preprocess();
 
-    render(&scene);
 
     return 0;
 }
