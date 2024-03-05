@@ -89,6 +89,7 @@ BVHTree::Node* BVHTree::buildRecursive(
         tbb::mutex::scoped_lock lock(m_mutex);
         node = new Node();
         node_pool.push_back(node);
+        // if (node_pool.size() % 5000 == 0) cout << "Create " << node_pool.size() << " BVH nodes..." << endl;
     }
 
     // compute sub-tree aabb

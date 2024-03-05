@@ -19,6 +19,9 @@ public:
 		float b = normal.x() * normal.y() * a;
 		m_t = Vector3f(1.0f + sign * normal.x() * normal.x() * a, sign * b, -sign * normal.x());
 		m_b = Vector3f(b, sign + normal.y() * normal.y() * a, -normal.y());
+		if (std::abs(m_n.norm() - 1.0) > 1e-4) cout << "false TangentSpace m_n " << m_n.norm() << endl;
+		if (std::abs(m_t.norm() - 1.0) > 1e-4) cout << "false TangentSpace m_t " << m_t.norm() << endl;
+		if (std::abs(m_b.norm() - 1.0) > 1e-4) cout << "false TangentSpace m_b " << m_b.norm() << endl;
 	}
 
 	Vector3f toLocal(const Vector3f& v) const {

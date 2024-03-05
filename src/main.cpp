@@ -93,7 +93,7 @@ int main(int argc, char **argv) {
     threadCount = tbb::task_scheduler_init::automatic;
     tbb::task_scheduler_init init(threadCount);
 
-    Scene scene(64); // spp
+    Scene scene(128); // spp
     scene.loadOBJ("D:/code/Rendering/Path-Tracer/scenes/veach-mis/veach-mis.obj");
     scene.loadXML("D:/code/Rendering/Path-Tracer/scenes/veach-mis/veach-mis.xml");
     scene.preprocess();

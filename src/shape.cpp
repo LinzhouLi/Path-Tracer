@@ -1,4 +1,4 @@
-#include <pt/shape.h>
+﻿#include <pt/shape.h>
 #include <pt/vector.h>
 #include <pt/mesh.h>
 #include <pt/aabb.h>
@@ -83,6 +83,10 @@ bool Triangle::intersect(const Ray& ray, Vector3f& bary, float& t) const {
 	return t >= ray.min_dis && t <= ray.max_dis;
 }
 
+/**
+* Shirley, P.et al. (2019).Sampling Transformations Zoo.In: Haines, E., Akenine - Möller, T.
+* (eds)Ray Tracing Gems.Apress, Berkeley, CA.https ://doi.org/10.1007/978-1-4842-4427-2_16
+*/
 TriangleSample Triangle::sample(const Vector2f& u) const {
 	float su0 = std::sqrt(u.x());
 	float bary0 = 1 - su0, bary1 = u.y() * su0;
@@ -92,10 +96,13 @@ TriangleSample Triangle::sample(const Vector2f& u) const {
 	getVertex(v0, v1, v2);
 	Vector3f p = v0 * bary0 + v1 * bary1 + v2 * bary2;
 
-	Vector3f n = ((v0 - v2).cross(v1 - v2));
+	Vector3f n;
 	if (getNormal(n0, n1, n2))
 		n = n0 * bary0 + n1 * bary1 + n2 * bary2;
-	
+	else
+		n = ((v0 - v2).cross(v1 - v2));
+	n.normalize();
+
 	float pdf = 1.0 / surfaceArea();
 	return TriangleSample(p, n, pdf);
 }
@@ -113,12 +120,12 @@ void Intersection::complete() {
 	p = v0 * m_bary.x() + v1 * m_bary.y() + v2 * m_bary.z();
 
 	// normal
-	n = ((v0 - v2).cross(v1 - v2)).normalized();
 	Vector3f n0, n1, n2;
-	if (m_shape->getNormal(n0, n1, n2)) {
+	if (m_shape->getNormal(n0, n1, n2))
 		n = n0 * m_bary.x() + n1 * m_bary.y() + n2 * m_bary.z();
-		n.normalize();
-	}
+	else
+		n = ((v0 - v2).cross(v1 - v2));
+	n.normalize();
 
 	// tangent
 	ts = TangentSpace(n);
