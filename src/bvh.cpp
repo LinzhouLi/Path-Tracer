@@ -18,7 +18,7 @@ void BVHTree::build() {
     std::vector<AABB> prim_aabbs(m_shapes->size());
     std::vector<Vector3f> prim_centers(m_shapes->size());
 
-    for (uint32_t i = 0; i < m_shapes->size(); i++) {
+    for (size_t i = 0; i < m_shapes->size(); i++) {
         prim_aabbs[i] = (*m_shapes)[i]->getAABB();
         prim_centers[i] = (*m_shapes)[i]->getCenter();
     }
