@@ -30,10 +30,10 @@ void BVHTree::build() {
     cout << "BVH tree contains " << m_nodes.size() << " nodes!" << endl;
 }
 
-bool BVHTree::rayIntersect(const Ray& ray, Intersection& its) {
+bool BVHTree::rayIntersect(const Ray& ray_, Intersection& its) {
     bool intersect = false;
 
-	Ray ray_(ray);
+	Ray ray(ray_);
     std::vector<size_t> stack;
     stack.push_back(0);
 
@@ -47,7 +47,7 @@ bool BVHTree::rayIntersect(const Ray& ray, Intersection& its) {
                 Triangle* primitive = (*m_shapes) [m_prim_ids[prim_idx]];
                 Vector3f bary; float t;
                 if (primitive->intersect(ray, bary, t)) {
-					ray_.max_dis = t; // find nearest intersection point
+                    ray.max_dis = t; // find nearest intersection point
 					intersect = true;
 					its.setInfo(primitive, bary);
 				}
