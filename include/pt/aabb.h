@@ -81,6 +81,13 @@ public:
 		return 2 * ((x + y) * z + x * y); // less mutiplication
 	}
 
+	inline float halfSurfaceArea() const {
+		if (empty()) return 0.0f;
+		float x = width(), y = height(), z = depth();
+		//return 2 * (x * y + x * z + y * z);
+		return (x + y) * z + x * y; // less mutiplication
+	}
+
 	// Offset a point to the AABB
 	Vector3f offset(Vector3f p) const {
 		Vector3f o = p - m_min;

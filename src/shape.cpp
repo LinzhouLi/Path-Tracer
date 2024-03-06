@@ -42,6 +42,12 @@ AABB Triangle::getAABB() const{
 	return AABB(v0, v1, v2);
 }
 
+Vector3f Triangle::getCenter() const {
+	Vector3f v0, v1, v2;
+	getVertex(v0, v1, v2);
+	return (v0 + v1 + v2) / 3.0f;
+}
+
 bool Triangle::intersect(const Ray& ray, Vector3f& bary, float& t) const {
 	Vector3f p0, p1, p2;
 	getVertex(p0, p1, p2);

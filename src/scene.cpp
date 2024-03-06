@@ -12,6 +12,7 @@
 #include <pt/sampler.h>
 #include <pt/light.h>
 #include <pt/filter.h>
+#include <pt/bvh.h>
 
 #include <pugixml.hpp>
 #define TINYOBJLOADER_IMPLEMENTATION

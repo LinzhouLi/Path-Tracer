@@ -13,6 +13,7 @@
 #define NOMINMAX                /* Don't override min/max */
 #endif
 
+#include <optional>
 #include <iostream>
 #include <algorithm>
 #include <vector>

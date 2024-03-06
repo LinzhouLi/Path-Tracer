@@ -64,14 +64,14 @@ public:
     // Create primitives, build accelration struction and integrator
     void preprocess();
 
-    // Get primitives (editable)
-    std::vector<Triangle*>* getPrimitives() { return &m_shapes; }
+    // Get primitives
+    const std::vector<Triangle*>* getPrimitives() const { return &m_shapes; }
 
     // Get sampler
-    Sampler* getSampler() { return m_sampler; }
+    Sampler* getSampler() const { return m_sampler; }
 
     // Get filter
-    Filter* getFilter() { return m_filter; }
+    Filter* getFilter() const { return m_filter; }
 
 private:
     void createPrimitives();

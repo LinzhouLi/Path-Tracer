@@ -27,6 +27,9 @@ public:
 	// Get AABB bonding box
 	AABB getAABB() const;
 
+	// Get center
+	Vector3f getCenter() const;
+
 	// Ray intersect with triangle
 	bool intersect(const Ray& ray, Vector3f& bary, float& t) const;
 
