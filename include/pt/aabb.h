@@ -77,7 +77,8 @@ public:
 	inline float surfaceArea() const {
 		if (empty()) return 0.0f;
 		float x = width(), y = height(), z = depth();
-		return 2 * (x * y + x * z + y * z);
+		//return 2 * (x * y + x * z + y * z);
+		return 2 * ((x + y) * z + x * y); // less mutiplication
 	}
 
 	// Offset a point to the AABB
