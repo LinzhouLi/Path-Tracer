@@ -63,7 +63,9 @@ BRDFSample Material::sampleBRDF(const Vector3f& wo, float uc, const Vector2f& u,
 
 	float sumKd = diffuse.sum();
 	float sumKs = m_specular.sum();
-	float specProb = sumKs / (sumKd + sumKs);
+	float sumKdKs = sumKd + sumKs;
+	if (sumKdKs == 0.0f) return BRDFSample(); // black body
+	float specProb = sumKs / sumKdKs;
 
 	Vector3f wi;
 	Vector3f r = reflect(wo, its.n);
@@ -102,7 +104,9 @@ float Material::pdf(const Vector3f& wo, const Vector3f& wi, const Intersection& 
 
 	float sumKd = diffuse.sum();
 	float sumKs = m_specular.sum();
-	float specProb = sumKs / (sumKd + sumKs);
+	float sumKdKs = sumKd + sumKs;
+	if (sumKdKs == 0.0f) return 0.0f; // black body
+	float specProb = sumKs / sumKdKs;
 	Vector3f r = reflect(wo, its.n);
 
 	// specular pdf

@@ -93,7 +93,7 @@ int main(int argc, char **argv) {
     threadCount = tbb::task_scheduler_init::automatic;
     tbb::task_scheduler_init init(threadCount);
 
-    Scene scene(128); // spp
+    Scene scene(1024); // spp
     scene.loadOBJ("D:/code/Rendering/Path-Tracer/scenes/bathroom/bathroom.obj");
     scene.loadXML("D:/code/Rendering/Path-Tracer/scenes/bathroom/bathroom.xml");
     scene.preprocess();
