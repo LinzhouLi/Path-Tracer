@@ -49,12 +49,8 @@ static constexpr float INV_SQRT_TWO = 0.70710678118654752440f;
 static int threadCount = -1;
 
 /* Forward declarations */
-struct Normal3f;
 struct Color3f;
 struct Color4f;
-
-
-/// Some more forward declarations
 class AABB;
 class Ray;
 class Accel;
@@ -74,6 +70,7 @@ class Triangle;
 class AreaLight;
 class Filter;
 class TangentSpace;
+class UniformLightSelector;
 
 
 /// Import cout, cerr, endl for debugging purposes

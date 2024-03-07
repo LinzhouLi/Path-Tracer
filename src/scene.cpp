@@ -12,6 +12,7 @@
 #include <pt/light.h>
 #include <pt/filter.h>
 #include <pt/bvh.h>
+#include <pt/lightselector.h>
 
 #include <pugixml.hpp>
 #define TINYOBJLOADER_IMPLEMENTATION
@@ -259,6 +260,7 @@ void Scene::createAreaLights() {
 			}
 		}
 	}
+	m_light_selector = new UniformLightSelector(&m_lights); // create light selector
 	cout << "Create " << m_lights.size() << " area lights!" << endl;
 }
 

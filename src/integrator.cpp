@@ -8,6 +8,7 @@
 #include <pt/integrator.h>
 #include <pt/sampler.h>
 #include <pt/light.h>
+#include <pt/lightselector.h>
 
 namespace pt {
 
@@ -58,7 +59,7 @@ Color3f PathIntegrator::Li(Scene* scene, Sampler* sampler, const Ray& ray_) cons
 			if (bounce == 0) L += accThroughput.cwiseProduct(Le);
 			else {
 				float light_pdf = light->pdf(its, ray);
-				light_pdf *= 1.0 / scene->getLights().size(); // select pdf
+				light_pdf *= scene->getLightSelector()->pdf(light); // select pdf
 				float misWeight = powerHeuristic(brdf_pdf, light_pdf);
 				L += misWeight * accThroughput.cwiseProduct(Le); // brdf mis
 			}
@@ -96,9 +97,8 @@ Vector3f PathIntegrator::sampleLd(Scene* scene, Sampler* sampler, const Intersec
 		return Vector3f(0.0);
 
 	// uniformly select a light source
-	int lightIndex = std::min(int(sampler->sample1D() * nLights), nLights - 1);
-	float selectPdf = 1.0 / nLights;
-	AreaLight* light = lights[lightIndex];
+	AreaLight* light = scene->getLightSelector()->select(sampler->sample1D());
+	float selectPdf = scene->getLightSelector()->pdf(light);
 
 	// sample a point on the light source (sample a triangle)
 	LightSample lightIts = light->sampleLi(surfIts, sampler->sample2D());

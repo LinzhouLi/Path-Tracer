@@ -18,6 +18,8 @@ public:
     ~Scene() {
         delete m_accel;
         delete m_camera;
+        delete m_filter;
+        delete m_light_selector;
         for (auto p : m_meshes) delete p;
         for (auto p : m_materials) delete p;
         for (auto p : m_shapes) delete p;
@@ -65,6 +67,9 @@ public:
     // Get filter
     Filter* getFilter() const { return m_filter; }
 
+    // Get light selector
+    UniformLightSelector* getLightSelector() const { return m_light_selector; }
+
 private:
     void createPrimitives();
     void createAreaLights();
@@ -79,6 +84,7 @@ private:
     Camera* m_camera = nullptr;
     Accel* m_accel = nullptr;
     Filter* m_filter = nullptr;
+    UniformLightSelector* m_light_selector = nullptr;
 };
 
 }
