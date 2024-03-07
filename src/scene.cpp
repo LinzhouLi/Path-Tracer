@@ -236,6 +236,8 @@ void Scene::preprocess() {
 
 	// build Integrator
 	m_integrator = new PathIntegrator();
+	//m_integrator = new BaseColorIntegrator();
+	//m_integrator = new GeometryIntegrator();
 	m_integrator->preprocess(this);
 
 	// create sampler

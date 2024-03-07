@@ -108,31 +108,6 @@ public:
 		: std::runtime_error(tfm::format(fmt, args...)) { }
 };
 
-/// Convert a string to lower case
-extern std::string toLower(const std::string& value);
-
-/// Check if a string ends with another string
-extern bool endsWith(const std::string& value, const std::string& ending);
-
-
-/// Simple floating point clamping function
-inline float clamp(float value, float min, float max) {
-    if (value < min)
-        return min;
-    else if (value > max)
-        return max;
-    else return value;
-}
-
-/// Simple integer clamping function
-inline int clamp(int value, int min, int max) {
-    if (value < min)
-        return min;
-    else if (value > max)
-        return max;
-    else return value;
-}
-
 template <typename T>
 inline T mix(const T& a, const T& b, float f) {
     return a * (1.0 - f) + b * f;

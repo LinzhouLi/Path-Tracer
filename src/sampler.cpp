@@ -117,7 +117,7 @@ inline Vector2f SobolSampler::samplePixel2D() {
     Vector2f u(sampleDimension(0), sampleDimension(1));
     // Remap Sobol\+$'$ dimensions used for pixel samples
     for (int dim = 0; dim < 2; ++dim) {
-        u[dim] = clamp(u[dim] * m_scale - m_pixel[dim], 0.0f, sobol::FloatOneMinusEpsilon);
+        u[dim] = std::clamp(u[dim] * m_scale - m_pixel[dim], 0.0f, sobol::FloatOneMinusEpsilon);
     }
     return u;
 }

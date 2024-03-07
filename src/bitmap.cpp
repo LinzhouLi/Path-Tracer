@@ -19,6 +19,19 @@
 
 namespace pt {
 
+std::string toLower(const std::string& value) {
+    std::string result;
+    result.resize(value.size());
+    std::transform(value.begin(), value.end(), result.begin(), ::tolower);
+    return result;
+}
+
+bool endsWith(const std::string& value, const std::string& ending) {
+    if (ending.size() > value.size())
+        return false;
+    return std::equal(ending.rbegin(), ending.rend(), value.rbegin());
+}
+
 void Bitmap::loadEXR(const std::string &filename) {
     Imf::InputFile file(filename.c_str());
     const Imf::Header &header = file.header();
@@ -132,9 +145,9 @@ void Bitmap::savePNG(const std::string &filename) {
     for (uint32_t i = 0; i < rows(); ++i) {
         for (uint32_t j = 0; j < cols(); ++j) {
             Color3f tonemapped = coeffRef(i, j).toSRGB();
-            dst[0] = (uint8_t) clamp(255.f * tonemapped[0], 0.f, 255.f);
-            dst[1] = (uint8_t) clamp(255.f * tonemapped[1], 0.f, 255.f);
-            dst[2] = (uint8_t) clamp(255.f * tonemapped[2], 0.f, 255.f);
+            dst[0] = (uint8_t) std::clamp(255.f * tonemapped[0], 0.f, 255.f);
+            dst[1] = (uint8_t) std::clamp(255.f * tonemapped[1], 0.f, 255.f);
+            dst[2] = (uint8_t) std::clamp(255.f * tonemapped[2], 0.f, 255.f);
             dst += 3;
         }
     }
@@ -148,14 +161,16 @@ void Bitmap::savePNG(const std::string &filename) {
 }
 
 Color3f Bitmap::sample(const Vector2f& uv) const {
-    // nearest interpolation
-    //int x = clamp(int(uv.x() * cols()), 0, cols() - 1),
-    //    y = clamp(int(uv.y() * rows()), 0, rows() - 1);
+    // simple interpolation
+    //int x = std::clamp(int(uv.x() * cols()), 0, cols() - 1),
+    //    y = std::clamp(int(uv.y() * rows()), 0, rows() - 1);
     //return coeff(y, x);
 
     // bilinear interpolation
-    float s = std::max(uv.x() * cols() - 0.5f, 0.0f);
-    float t = std::max(uv.y() * rows() - 0.5f, 0.0f);
+    float u = std::clamp(uv.x(), 0.0f, 1.0f);
+    float v = std::clamp(uv.y(), 0.0f, 1.0f);
+    float s = std::max(u * cols() - 0.5f, 0.0f);
+    float t = std::max(v * rows() - 0.5f, 0.0f);
     int x0 = s;
     int y0 = t;
     int x1 = std::min(x0 + 1, int(cols() - 1));
