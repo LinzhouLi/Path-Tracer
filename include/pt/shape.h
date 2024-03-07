@@ -1,6 +1,6 @@
 #pragma once
 
-#include <pt/vector.h>
+#include <pt/common.h>
 #include <pt/tangent.h>
 
 namespace pt {

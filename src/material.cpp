@@ -2,6 +2,7 @@
 #include <pt/color.h>
 #include <pt/bitmap.h>
 #include <pt/shape.h>
+#include <pt/tangent.h>
 
 namespace pt {
 
@@ -16,7 +17,7 @@ Vector3f sampleCosineHemisphere(const Vector2f& u) {
 	return Vector3f(su0 * std::cos(phi), su0 * std::sin(phi), std::sqrt(1.0f - u.x()));
 }
 
-Vector3f reflect(const Vector3f& w, const Vector3f& n) {
+inline Vector3f reflect(const Vector3f& w, const Vector3f& n) {
 	return -w + 2.0f * w.dot(n) * n;
 }
 

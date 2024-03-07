@@ -17,7 +17,8 @@
 #include <iostream>
 #include <algorithm>
 #include <vector>
-#include <Eigen/Dense>
+
+#include <pt/vector.h>
 #include <tinyformat.h>
 
 
@@ -51,27 +52,7 @@ static int threadCount = -1;
 struct Normal3f;
 struct Color3f;
 struct Color4f;
-template <typename Scalar, int Dimension>  struct TVector;
-template <typename Scalar, int Dimension>  struct TPoint;
-template <typename Point, typename Vector> struct TRay;
-template <typename Point>                  struct TBoundingBox;
 
-/* Basic data structures (vectors, points, rays, bounding boxes,
-	kd-trees) are oblivious to the underlying data type and dimension.
-	The following list of typedefs establishes some convenient aliases
-	for specific types. */
-typedef TVector<float, 1>       Vector1f;
-typedef TVector<float, 2>       Vector2f;
-typedef TVector<float, 3>       Vector3f;
-typedef TVector<float, 4>       Vector4f;
-//typedef TVector<double, 1>      Vector1d;
-//typedef TVector<double, 2>      Vector2d;
-//typedef TVector<double, 3>      Vector3d;
-//typedef TVector<double, 4>      Vector4d;
-typedef TVector<int, 1>         Vector1i;
-typedef TVector<int, 2>         Vector2i;
-typedef TVector<int, 3>         Vector3i;
-typedef TVector<int, 4>         Vector4i;
 
 /// Some more forward declarations
 class AABB;

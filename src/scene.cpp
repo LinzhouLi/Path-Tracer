@@ -1,6 +1,5 @@
 
 #include <pt/scene.h>
-#include <pt/vector.h>
 #include <pt/color.h>
 #include <pt/mesh.h>
 #include <pt/bitmap.h>

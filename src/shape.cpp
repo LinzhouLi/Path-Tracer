@@ -1,5 +1,4 @@
 ﻿#include <pt/shape.h>
-#include <pt/vector.h>
 #include <pt/mesh.h>
 #include <pt/aabb.h>
 #include <pt/ray.h>

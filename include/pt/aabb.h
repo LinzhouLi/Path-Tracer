@@ -1,7 +1,6 @@
 #pragma once
 
 #include <pt/common.h>
-#include <pt/vector.h>
 
 namespace pt {
 
