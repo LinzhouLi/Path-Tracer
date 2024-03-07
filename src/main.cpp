@@ -103,7 +103,7 @@ int main(int argc, char **argv) {
     uint32_t spp = 64;
     SobolSampler sampler(spp, scene.getCamera()->getScreenSize());
 
-    // build Integrator
+    // create Integrator
     PathIntegrator integrator;
     integrator.preprocess(&scene);
 
