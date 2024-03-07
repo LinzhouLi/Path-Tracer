@@ -234,16 +234,6 @@ void Scene::preprocess() {
 	m_accel = new BVHTree(&m_shapes);
 	m_accel->build();
 
-	// build Integrator
-	m_integrator = new PathIntegrator();
-	//m_integrator = new BaseColorIntegrator();
-	//m_integrator = new GeometryIntegrator();
-	m_integrator->preprocess(this);
-
-	// create sampler
-	m_sampler = new SobolSampler(m_spp, m_camera->getScreenSize());
-	//m_sampler = new IndependentSampler(m_spp);
-
 	// create filter
 	m_filter = new GaussianFilter();
 }

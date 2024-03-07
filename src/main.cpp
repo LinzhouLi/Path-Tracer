@@ -17,7 +17,7 @@ using namespace pt;
 
 static bool useGui = true;
 
-static void renderBlock(Scene* scene, Sampler* sampler, ImageBlock& block) {
+static void renderBlock(Scene* scene, Sampler* sampler, Integrator* integrator, ImageBlock& block) {
     Vector2i offset = block.getOffset();
     Vector2i size = block.getSize();
 
@@ -32,7 +32,7 @@ static void renderBlock(Scene* scene, Sampler* sampler, ImageBlock& block) {
                 Vector2f pixelSample = pixel.cast<float>() + sampler->samplePixel2D();
 
                 Ray ray = scene->getCamera()->sampleRay(pixelSample);
-                Color3f value = scene->getIntegrator()->Li(scene, sampler, ray);
+                Color3f value = integrator->Li(scene, sampler, ray);
 
                 block.put(pixelSample, value);
             }
@@ -40,7 +40,7 @@ static void renderBlock(Scene* scene, Sampler* sampler, ImageBlock& block) {
     }
 }
 
-static void render(Scene* scene) {
+static void render(Scene* scene, Sampler* sampler, Integrator* integrator) {
     Vector2i screenSize = scene->getCamera()->getScreenSize();
     BlockGenerator blockGenerator(screenSize, PT_BLOCK_SIZE);
     ImageBlock result(screenSize, scene->getFilter());
@@ -63,12 +63,12 @@ static void render(Scene* scene) {
             ImageBlock block(Vector2i(PT_BLOCK_SIZE), scene->getFilter());
 
             /// Create a clone of the sampler for the current thread
-            std::unique_ptr<Sampler> sampler_t(scene->getSampler()->clone());
+            std::unique_ptr<Sampler> sampler_t(sampler->clone());
 
             for (int i = range.begin(); i < range.end(); ++i) {
                 blockGenerator.next(block);
 
-                renderBlock(scene, sampler_t.get(), block);
+                renderBlock(scene, sampler_t.get(), integrator, block);
 
                 result.put(block);
             }
@@ -93,12 +93,21 @@ int main(int argc, char **argv) {
     threadCount = tbb::task_scheduler_init::automatic;
     tbb::task_scheduler_init init(threadCount);
 
-    Scene scene(1024); // spp
-    scene.loadOBJ("D:/code/Rendering/Path-Tracer/scenes/bathroom/bathroom.obj");
-    scene.loadXML("D:/code/Rendering/Path-Tracer/scenes/bathroom/bathroom.xml");
+    // create scene
+    Scene scene; // spp
+    scene.loadOBJ("D:/code/Rendering/Path-Tracer/scenes/cornell-box/cornell-box.obj");
+    scene.loadXML("D:/code/Rendering/Path-Tracer/scenes/cornell-box/cornell-box.xml");
     scene.preprocess();
 
-    render(&scene);
+    // create sampler
+    uint32_t spp = 64;
+    SobolSampler sampler(spp, scene.getCamera()->getScreenSize());
+
+    // build Integrator
+    PathIntegrator integrator;
+    integrator.preprocess(&scene);
+
+    render(&scene, &sampler, &integrator);
 
     return 0;
 }

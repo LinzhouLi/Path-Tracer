@@ -13,13 +13,11 @@ struct LightInfo {
 
 class Scene {
 public:
-    Scene(uint32_t spp) : m_spp(spp) { }
+    Scene() { }
 
     ~Scene() {
         delete m_accel;
-        delete m_sampler;
         delete m_camera;
-        delete m_integrator;
         for (auto p : m_meshes) delete p;
         for (auto p : m_materials) delete p;
         for (auto p : m_shapes) delete p;
@@ -33,9 +31,6 @@ public:
 
     // Get camera
     Camera* getCamera() { return m_camera; }
-
-    // Get integrator
-    Integrator* getIntegrator() { return m_integrator; }
 
     // Get mesh by name
     TriangleMesh* getMesh(const std::string& mesh_name);
@@ -67,9 +62,6 @@ public:
     // Get primitives
     const std::vector<Triangle*>* getPrimitives() const { return &m_shapes; }
 
-    // Get sampler
-    Sampler* getSampler() const { return m_sampler; }
-
     // Get filter
     Filter* getFilter() const { return m_filter; }
 
@@ -84,13 +76,9 @@ private:
     std::vector<Material*> m_materials;
     std::vector<AreaLight*> m_lights;
 
-    Integrator* m_integrator = nullptr;
-    Sampler* m_sampler = nullptr;
     Camera* m_camera = nullptr;
     Accel* m_accel = nullptr;
     Filter* m_filter = nullptr;
-
-    uint32_t m_spp;
 };
 
 }

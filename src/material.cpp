@@ -5,6 +5,37 @@
 
 namespace pt {
 
+float fresnel(float cosThetaI, float extIOR = 1.000277f, float intIOR = 1.5046f) {
+	float etaI = extIOR, etaT = intIOR;
+
+	if (extIOR == intIOR)
+		return 0.0f;
+
+	/* Swap the indices of refraction if the interaction starts
+		at the inside of the object */
+	if (cosThetaI < 0.0f) {
+		std::swap(etaI, etaT);
+		cosThetaI = -cosThetaI;
+	}
+
+	/* Using Snell's law, calculate the squared sine of the
+		angle between the normal and the transmitted ray */
+	float eta = etaI / etaT,
+		sinThetaTSqr = eta * eta * (1 - cosThetaI * cosThetaI);
+
+	if (sinThetaTSqr > 1.0f)
+		return 1.0f;  /* Total internal reflection! */
+
+	float cosThetaT = std::sqrt(1.0f - sinThetaTSqr);
+
+	float Rs = (etaI * cosThetaI - etaT * cosThetaT)
+		/ (etaI * cosThetaI + etaT * cosThetaT);
+	float Rp = (etaT * cosThetaI - etaI * cosThetaT)
+		/ (etaT * cosThetaI + etaI * cosThetaT);
+
+	return (Rs * Rs + Rp * Rp) / 2.0f;
+}
+
 /**
 * Shirley, P.et al. (2019).Sampling Transformations Zoo.In: Haines, E., Akenine - Möller, T. 
 * (eds)Ray Tracing Gems.Apress, Berkeley, CA.https ://doi.org/10.1007/978-1-4842-4427-2_16
@@ -51,8 +82,10 @@ Vector3f Material::BRDF(const Vector3f& wo, const Vector3f& wi, const Intersecti
 	float normalization = (m_shininess + 2.0f) * INV_TWOPI;
 	Vector3f specular = m_specular * normalization * std::powf(cosRV, m_shininess);
 
+	float fr = fresnel(wi.dot(its.n));
+
 	// return combined result
-	return diffuse + specular;
+	return diffuse + fr * specular;
 }
 
 BRDFSample Material::sampleBRDF(const Vector3f& wo, float uc, const Vector2f& u, const Intersection& its) const {
@@ -93,7 +126,8 @@ BRDFSample Material::sampleBRDF(const Vector3f& wo, float uc, const Vector2f& u,
 	float pdf_diff = cosTheta * INV_PI;
 
 	// BRDF value
-	Vector3f f = diffuse * INV_PI + m_specular * (m_shininess + 2.0f) * INV_TWOPI * powRV;
+	float fr = fresnel(cosTheta);
+	Vector3f f = diffuse * INV_PI + fr * m_specular * (m_shininess + 2.0f) * INV_TWOPI * powRV;
 
 	float pdf = mix(pdf_diff, pdf_spec, specProb);
 	return BRDFSample(wi, pdf, f);

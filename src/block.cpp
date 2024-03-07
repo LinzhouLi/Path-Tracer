@@ -103,7 +103,7 @@ BlockGenerator::BlockGenerator(const Vector2i &size, int blockSize) : m_size(siz
     );
     m_blocksLeft = m_numBlocks.x() * m_numBlocks.y();
     m_direction = ERight;
-    m_block = Vector2i(m_numBlocks / 2);
+    m_block = Vector2i((m_numBlocks - Vector2i(1)) / 2);
     m_stepsLeft = 1;
     m_numSteps = 1;
 }
