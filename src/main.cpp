@@ -8,6 +8,8 @@
 #include <pt/scene.h>
 #include <pt/bitmap.h>
 #include <pt/material.h>
+#include <pt/bdpt.h>
+
 #include <tbb/parallel_for.h>
 #include <tbb/blocked_range.h>
 #include <tbb/task_scheduler_init.h>
@@ -104,7 +106,7 @@ int main(int argc, char **argv) {
     SobolSampler sampler(spp, scene.getCamera()->getScreenSize());
 
     // create Integrator
-    PathIntegrator integrator;
+    BDPTIntegrator integrator;
     integrator.preprocess(&scene);
 
     render(&scene, &sampler, &integrator);

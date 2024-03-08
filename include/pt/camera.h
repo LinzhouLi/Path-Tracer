@@ -21,9 +21,11 @@ public:
 		const Vector3f& up = Vector3f(0.0f, 1.0f, 0.0f)
 	);
 
-	Vector2i getScreenSize() { return Vector2i(m_width, m_height); }
+	Vector2i getScreenSize() const { return Vector2i(m_width, m_height); }
 
 	Ray sampleRay(const Vector2f screen_pos);
+
+	std::optional<Vector2f> project(const Vector3f& p);
 
 private:
 	uint32_t m_width, m_height;
@@ -33,8 +35,10 @@ private:
 	Vector3f m_lookat;
 	Vector3f m_up;
 
+	Transform m_camera2sample;
 	Transform m_sample2camera;
 	Transform m_camera2world;
+	Transform m_world2camera;
 };
 
 }

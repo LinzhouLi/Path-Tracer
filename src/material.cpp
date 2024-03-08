@@ -3,7 +3,6 @@
 #include <pt/bitmap.h>
 #include <pt/shape.h>
 #include <pt/tangent.h>
-#include <pt/sampling.h>
 
 namespace pt {
 

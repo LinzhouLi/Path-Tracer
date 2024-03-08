@@ -4,7 +4,6 @@
 #include <pt/sampler.h>
 #include <pt/material.h>
 #include <pt/ray.h>
-#include <pt/sampling.h>
 
 namespace pt {
 

@@ -18,7 +18,7 @@ public:
 
 	static inline Vertex createFromCamera(const Camera* camera, const Vector3f& position, const Vector3f& beta);
 
-	static inline Vertex createFromSurface(const Intersection& its, const Vector3f& beta, float pdf, const Vertex& preVertex);
+	static inline Vertex createFromSurface(const Intersection& its, const Vector3f& beta);
 
 	float convertPdfDensity(float pdf, const Vertex& nextVertex) const;
 
@@ -33,8 +33,8 @@ public:
 
 	VertexType type;
 	Vector3f beta;
-	float pdfFwd = 0.0;
-	float pdfRev = 0.0;
+	float pdfAreaFwd = 0.0; // area measure
+	float pdfAreaRev = 0.0; // area measure
 	Intersection its;
 };
 
@@ -62,6 +62,12 @@ private:
 		Scene* scene, Sampler* sampler, 
 		Vertex* lightVertices, Vertex* cameraVertices,
 		int s, int t, Vector2f& pixelSample
+	) const;
+
+	float computeMISWeight(
+		Scene* scene,
+		Vertex* lightVertices, Vertex* cameraVertices,
+		int s, int t
 	) const;
 };
 

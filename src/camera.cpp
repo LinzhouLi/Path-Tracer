@@ -59,8 +59,10 @@ Camera::Camera(
 	ndc2pixel_trans.scale(Eigen::Vector3f(-0.5 * float(width), -0.5 * float(height), 1.0));
 	Eigen::Matrix4f ndc2pixel_mat = ndc2pixel_trans.matrix();
 
+	m_camera2sample.setMatrix(ndc2pixel_mat * projection_mat);
 	m_sample2camera.setMatrix((ndc2pixel_mat * projection_mat).inverse());
 	m_camera2world.setMatrix(camera2world_mat);
+	m_world2camera.setMatrix(camera2world_mat.inverse());
 
 	// for projecton correction
 	Vector3f tmp_sample(0.5f * width, 0.5f * height, Camera::sample_z);
@@ -75,6 +77,16 @@ Ray Camera::sampleRay(const Vector2f screen_pos) {
 	float proj = Camera::proj_nume / d.z(); // project to a plane
 	d = m_camera2world.apply(d, Transform::Type::Vector);
 	return Ray(m_eye, d, Camera::cnear * proj, Camera::cfar * proj);
+}
+
+std::optional<Vector2f> Camera::project(const Vector3f& p) {
+	Vector3f p_cam = m_world2camera.apply(p, Transform::Type::Scaler);
+	if (p_cam.z() < Camera::cnear || p_cam.z() > Camera::cfar)
+		return std::nullopt;
+	Vector3f p_ndc = m_camera2sample.apply(p_cam, Transform::Type::Scaler);
+	if (p_ndc.x() < 0 || p_ndc.x() > m_width || p_ndc.y() < 0 || p_ndc.y() > m_height)
+		return std::nullopt;
+	return Vector2f(p_ndc.x(), p_ndc.y());
 }
 
 };
