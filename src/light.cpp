@@ -35,12 +35,12 @@ LightLiSample AreaLight::sampleLi(const Intersection& surfIts, const Vector2f& u
 LightLeSample AreaLight::sampleLe(const Vector2f& u1, const Vector2f& u2) const {
 	TriangleSample shapeSample = m_shape->sample(u1); // sample position
 	Vector3f w = sampleCosineHemisphere(u2); // sample directon
-	float pdfDir = w.z();
+	float pdfDir = w.z() * INV_PI; // cosine hemisphere pdf shuold divide by PI
 
 	TangentSpace ts(shapeSample.n); // pbrt use geometric normal here, but I use shading normal
 	w = ts.toWorld(w);
 	Ray ray(shapeSample.p + Epsilon * shapeSample.n, w, 0.0); // emitted ray
-	return LightLeSample { m_lemit, ray, shapeSample.n,  shapeSample.pdfArea,  pdfDir };
+	return LightLeSample { m_lemit, ray, shapeSample.n, shapeSample.pdfArea, pdfDir };
 }
 
 float AreaLight::pdfLi(const Intersection& lightIts, const Ray& ray) const {

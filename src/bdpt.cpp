@@ -9,16 +9,31 @@
 
 namespace pt {
 
+	bool isValid(const Vector3f& v) {
+		for (int i = 0; i < 3; ++i) {
+			float value = v.coeff(i);
+			if (value < 0 || !std::isfinite(value))
+				return false;
+		}
+		return true;
+	}
+
+	bool isValid(float v) {
+		if (v < 0 || !std::isfinite(v)) return false;
+		return true;
+	}
+
 float correctShadingNormal(const Intersection& its, const Vector3f& wo, const Vector3f& wi, TransportMode mode) {
-	if (mode == TransportMode::Radiance) {
-		return 1.0f;
-	}
-	else {
-		float num = its.n.dot(wo) * its.ng.dot(wi); // cos(wo, ns) * cos(wi, ng)
-		float denom = its.ng.dot(wo) * its.n.dot(wi); // cos(wo, ng) * cos(wi, ns)
-		if (denom == 0.0f) return 0.0f;
-		else return num / denom;
-	}
+	return 1.0f;
+	//if (mode == TransportMode::Radiance) {
+	//	return 1.0f;
+	//}
+	//else {
+	//	float num = its.n.dot(wo) * its.ng.dot(wi); // cos(wo, ns) * cos(wi, ng)
+	//	float denom = its.ng.dot(wo) * its.n.dot(wi); // cos(wo, ng) * cos(wi, ns)
+	//	if (denom == 0.0f) return 0.0f;
+	//	else return num / denom;
+	//}
 }
 
 float G(const Vertex& a, const Vertex& b) {
@@ -222,12 +237,17 @@ Vector3f BDPTIntegrator::connectLightPath(
 		const Vertex& vs = lightVertices[s - 1];
 		const Vertex& vs_prev = lightVertices[s - 2];
 		const Vertex& cam = cameraVertices[0]; // do not resample
-		if (scene->unocculded(vs.its.p, cam.its.p, vs.its.n)) {
-			Vector3f wi = (cam.its.p - vs.its.p).normalized();
+		Vector3f wi = cam.its.p - vs.its.p;
+		float dist = wi.norm();
+		if (scene->unocculded(vs.its.p, cam.its.p, vs.its.n) && dist != 0.0f) {
 			auto result = scene->getCamera()->project(vs.its.p);
 			if (result.has_value()) { // vs is visible in ndc space
+				wi /= dist;
 				pixelSample = result.value(); // update pixel sample
-				L = vs.beta.cwiseProduct(vs.BRDF(vs_prev, cam, TransportMode::Importance)) * vs.its.n.dot(wi);
+				L = vs.beta.cwiseProduct(vs.BRDF(vs_prev, cam, TransportMode::Importance)) * std::abs(vs.its.n.dot(wi));
+				//if (!isValid(L)) cout << "L: " << L.toString() << endl;
+				//if (!isValid(vs.beta)) cout << "vs.beta: " << vs.beta.toString() << endl;
+				//if (!isValid(vs.its.n.dot(wi))) cout << "vs.its.n.dot(wi): " << vs.its.n.dot(wi) << endl;
 			}
 		}
 	}
