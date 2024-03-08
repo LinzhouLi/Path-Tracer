@@ -12,7 +12,6 @@
 #include <pt/light.h>
 #include <pt/filter.h>
 #include <pt/bvh.h>
-#include <pt/lightselector.h>
 
 #include <pugixml.hpp>
 #define TINYOBJLOADER_IMPLEMENTATION

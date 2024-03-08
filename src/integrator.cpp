@@ -8,7 +8,6 @@
 #include <pt/integrator.h>
 #include <pt/sampler.h>
 #include <pt/light.h>
-#include <pt/lightselector.h>
 
 namespace pt {
 
