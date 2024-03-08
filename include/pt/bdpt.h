@@ -16,7 +16,7 @@ public:
 
 	static inline Vertex createFromLight(const AreaLight* light, const Vector3f& position, const Vector3f& normal, const Vector3f& Le, float pdf);
 
-	static inline Vertex createFromCamera(const Camera* camera, const Vector3f& position, const Vector3f& beta);
+	static inline Vertex createFromCamera(const Camera* camera, const Vector3f& position, const Vector3f& dir, const Vector3f& beta);
 
 	static inline Vertex createFromSurface(const Intersection& its, const Vector3f& beta);
 

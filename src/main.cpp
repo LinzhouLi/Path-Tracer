@@ -43,7 +43,6 @@ static void renderBlock(Scene* scene, Sampler* sampler, Integrator* integrator, 
 
 static void render(Scene* scene, Sampler* sampler, Integrator* integrator) {
     Vector2i screenSize = scene->getCamera()->getScreenSize();
-    BlockGenerator blockGenerator(screenSize, PT_BLOCK_SIZE);
     ImageBlock result(screenSize, scene->getFilter());
     integrator->setResultBlock(&result);
     result.clear();
@@ -59,6 +58,7 @@ static void render(Scene* scene, Sampler* sampler, Integrator* integrator) {
         cout.flush();
         Timer timer;
 
+        BlockGenerator blockGenerator(screenSize, PT_BLOCK_SIZE);
         tbb::blocked_range<int> range(0, blockGenerator.getBlockCount());
 
         auto map = [&](const tbb::blocked_range<int>& range) {
@@ -74,7 +74,7 @@ static void render(Scene* scene, Sampler* sampler, Integrator* integrator) {
 
                 result.put(block);
             }
-        };
+            };
 
         tbb::parallel_for(range, map);
         cout << "done. (took " << timer.elapsedString() << ")" << endl;
@@ -107,6 +107,7 @@ int main(int argc, char **argv) {
 
     // create Integrator
     BDPTIntegrator integrator;
+    //PathIntegrator integrator;
     integrator.preprocess(&scene);
 
     render(&scene, &sampler, &integrator);

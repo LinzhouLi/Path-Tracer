@@ -3,7 +3,7 @@
 namespace pt {
 
 const float Camera::cnear = 0.01f;
-const float Camera::cfar = 1000.0f;
+const float Camera::cfar = 10000.0f;
 const float Camera::sample_z = 0.5f;
 float Camera::proj_nume = 1.0f;
 

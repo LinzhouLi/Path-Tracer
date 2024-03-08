@@ -95,6 +95,10 @@ inline Vector3f reflect(const Vector3f& w, const Vector3f& n) {
 	return -w + 2.0f * w.dot(n) * n;
 }
 
+inline float absDot(const Vector3f& a, const Vector3f& b) {
+	return std::abs(a.dot(b));
+}
+
 /**
 * Shirley, P.et al. (2019).Sampling Transformations Zoo.In: Haines, E., Akenine - Möller, T.
 * (eds)Ray Tracing Gems.Apress, Berkeley, CA.https ://doi.org/10.1007/978-1-4842-4427-2_16

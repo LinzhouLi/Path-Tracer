@@ -24,16 +24,15 @@ namespace pt {
 	}
 
 float correctShadingNormal(const Intersection& its, const Vector3f& wo, const Vector3f& wi, TransportMode mode) {
-	return 1.0f;
-	//if (mode == TransportMode::Radiance) {
-	//	return 1.0f;
-	//}
-	//else {
-	//	float num = its.n.dot(wo) * its.ng.dot(wi); // cos(wo, ns) * cos(wi, ng)
-	//	float denom = its.ng.dot(wo) * its.n.dot(wi); // cos(wo, ng) * cos(wi, ns)
-	//	if (denom == 0.0f) return 0.0f;
-	//	else return num / denom;
-	//}
+	if (mode == TransportMode::Radiance) {
+		return 1.0f;
+	}
+	else {
+		float num = absDot(its.n, wo) * absDot(its.ng, wi); // cos(wo, ns) * cos(wi, ng)
+		float denom = absDot(its.ng, wo) * absDot(its.n, wi); // cos(wo, ng) * cos(wi, ns)
+		if (denom == 0.0f) return 0.0f;
+		else return num / denom;
+	}
 }
 
 float G(const Vertex& a, const Vertex& b) {
@@ -41,7 +40,7 @@ float G(const Vertex& a, const Vertex& b) {
 	float dist = ab.norm();
 	if (dist == 0.0f) return 0.0f;
 	ab /= dist;
-	return a.its.n.dot(ab) * b.its.n.dot(-ab) / (dist * dist);
+	return absDot(a.its.n, ab) * absDot(b.its.n, -ab) / (dist * dist);
 }
 
 
@@ -56,11 +55,13 @@ inline Vertex Vertex::createFromLight(const AreaLight* light, const Vector3f& po
 	return v;
 }
 
-inline Vertex Vertex::createFromCamera(const Camera* camera, const Vector3f& position, const Vector3f& beta) {
+inline Vertex Vertex::createFromCamera(const Camera* camera, const Vector3f& position, const Vector3f& dir, const Vector3f& beta) {
 	Vertex v;
 	v.type = VertexType::Camera;
-	v.beta = beta;
 	v.its.p = position;
+	v.its.n = v.its.ng = dir;
+	v.camera = camera;
+	v.beta = beta;
 	return v;
 }
 
@@ -135,7 +136,7 @@ int BDPTIntegrator::randomWalk(
 		if (bs.f.squaredNorm() == 0.0f || bs.pdf == 0.0f) break; // no enerage
 
 		// accumulate beta (throughput)
-		Vector3f throughput = bs.f * its.n.dot(bs.wi) / bs.pdf;
+		Vector3f throughput = bs.f * absDot(its.n, bs.wi) / bs.pdf;
 		beta = beta.cwiseProduct(throughput);
 		beta *= correctShadingNormal(its, wo, bs.wi, mode);
 
@@ -155,12 +156,12 @@ int BDPTIntegrator::randomWalk(
 int BDPTIntegrator::generateCameraSubpath(Scene* scene, Sampler* sampler, Vertex* path, const Vector2f& pixelSample, int maxDepth) const {
 	if (maxDepth == 0) return 0;
 
-	float beta = 1.0f;
+	float beta = 1.0f, pdf = 0.0f;
 	Ray ray = scene->getCamera()->sampleRay(pixelSample);
-	path[0] = Vertex::createFromCamera(scene->getCamera(), ray.org, beta);
+	path[0] = Vertex::createFromCamera(scene->getCamera(), ray.org, ray.dir, beta);
 	int numVertices = randomWalk(
 		scene, sampler, path + 1, ray,
-		beta, 0.0f, maxDepth - 1, TransportMode::Radiance
+		beta, pdf, maxDepth - 1, TransportMode::Radiance
 	);
 	return numVertices + 1;
 }
@@ -236,18 +237,16 @@ Vector3f BDPTIntegrator::connectLightPath(
 	else if (t == 1) {
 		const Vertex& vs = lightVertices[s - 1];
 		const Vertex& vs_prev = lightVertices[s - 2];
-		const Vertex& cam = cameraVertices[0]; // do not resample
-		Vector3f wi = cam.its.p - vs.its.p;
+		const Vertex& vt = cameraVertices[0]; // do not resample
+		Vector3f wi = vt.its.p - vs.its.p;
 		float dist = wi.norm();
-		if (scene->unocculded(vs.its.p, cam.its.p, vs.its.n) && dist != 0.0f) {
+		if (scene->unocculded(vs.its.p, vt.its.p, vs.its.n) && dist != 0.0f) {
 			auto result = scene->getCamera()->project(vs.its.p);
 			if (result.has_value()) { // vs is visible in ndc space
 				wi /= dist;
 				pixelSample = result.value(); // update pixel sample
-				L = vs.beta.cwiseProduct(vs.BRDF(vs_prev, cam, TransportMode::Importance)) * std::abs(vs.its.n.dot(wi));
-				//if (!isValid(L)) cout << "L: " << L.toString() << endl;
-				//if (!isValid(vs.beta)) cout << "vs.beta: " << vs.beta.toString() << endl;
-				//if (!isValid(vs.its.n.dot(wi))) cout << "vs.its.n.dot(wi): " << vs.its.n.dot(wi) << endl;
+				L = vs.beta.cwiseProduct(vs.BRDF(vs_prev, vt, TransportMode::Importance)) *
+					absDot(vs.its.n, wi) / (dist * dist);
 			}
 		}
 	}
@@ -268,7 +267,7 @@ Vector3f BDPTIntegrator::connectLightPath(
 			sampledVertex = Vertex::createFromLight(light, ls.p, ls.n, ls.L / pdfLight, 0.0f);
 			L = vt.beta
 				.cwiseProduct(vt.BRDF(vt_prev, sampledVertex, TransportMode::Radiance))
-				.cwiseProduct(sampledVertex.beta) * vt.its.n.dot(ls.wi);
+				.cwiseProduct(sampledVertex.beta) * absDot(vt.its.n, ls.wi);
 		}
 	}
 	else { // general cases
@@ -310,12 +309,14 @@ Vector3f BDPTIntegrator::Li(Scene* scene, Sampler* sampler, const Vector2f& pixe
 			Vector2f newPixelSample = pixelSample;
 			Vector3f Lpath = connectLightPath(scene, sampler, lightVertices, cameraVertices, s, t, newPixelSample);
 
-			if (t == 1 && s==2) m_block->put(newPixelSample, Lpath);
-			//else L += Lpath;
+			if (t == 1) m_block->put(newPixelSample, Lpath);
+			else L += Lpath;
 		}
 	}
 
 	return L;
+
+	//return connectLightPath(scene, sampler, lightVertices, cameraVertices, 0, 2, Vector2f());
 }
 
 }
