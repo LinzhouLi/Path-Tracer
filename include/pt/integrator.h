@@ -4,13 +4,18 @@
 
 namespace pt {
 
-struct LightSample;
+struct LightLiSample;
 
 class Integrator {
 public:
 	virtual void preprocess(Scene* scene) { }
 
-	virtual Color3f Li(Scene* scene, Sampler* sampler, const Ray& ray) const = 0;
+	virtual Vector3f Li(Scene* scene, Sampler* sampler, const Vector2f& pixelSample) = 0;
+
+	void setResultBlock(ImageBlock* block) { m_block = block; }
+
+protected:
+	ImageBlock* m_block;
 };
 
 class GeometryIntegrator : public Integrator {
@@ -19,7 +24,7 @@ public:
 		cout << "Build GeometryIntegrator!" << endl;
 	}
 
-	Color3f Li(Scene* scene, Sampler* sampler, const Ray& ray) const;
+	Vector3f Li(Scene* scene, Sampler* sampler, const Vector2f& pixelSample);
 };
 
 class BaseColorIntegrator : public Integrator {
@@ -28,7 +33,7 @@ public:
 		cout << "Build BaseColorIntegrator!" << endl;
 	}
 
-	Color3f Li(Scene* scene, Sampler* sampler, const Ray& ray) const;
+	Vector3f Li(Scene* scene, Sampler* sampler, const Vector2f& pixelSample);
 };
 
 class PathIntegrator : public Integrator {
@@ -37,7 +42,7 @@ public:
 		cout << "Build PathIntegrator!" << endl;
 	}
 
-	Color3f Li(Scene* scene, Sampler* sampler, const Ray& ray) const;
+	Vector3f Li(Scene* scene, Sampler* sampler, const Vector2f& pixelSample);
 
 private:
 	Vector3f sampleLd(Scene* scene, Sampler* sampler, const Intersection& its, const Vector3f& wo) const;

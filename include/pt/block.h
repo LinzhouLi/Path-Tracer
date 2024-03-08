@@ -77,7 +77,7 @@ public:
     void clear() { setConstant(Color4f()); }
 
     /// Record a sample with the given position and radiance value
-    void put(const Vector2f & globalPos, const Color3f &value);
+    void put(const Vector2f & globalPos, const Vector3f &value);
 
     /**
      * \brief Merge another image block into this one

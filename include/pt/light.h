@@ -1,20 +1,25 @@
 #pragma once
 
 #include <pt/common.h>
+#include <pt/ray.h>
 
 namespace pt {
 
-struct LightSample {
-	LightSample(
-		const Vector3f& Le_ = Vector3f(), const Vector3f& wi_ = Vector3f(), 
-		const Vector3f& p_ = Vector3f(), const Vector3f& n_ = Vector3f(), float pdf_ = 0.0f) :
-		Le(Le_), wi(wi_), p(p_), n(n_), pdf(pdf_) { }
-
-	Vector3f Le;
-	Vector3f wi;
+struct LightLiSample {
+	Vector3f L;
+	Vector3f wi; // incident light direction
 	Vector3f p;
 	Vector3f n;
-	float pdf; // area measure
+	float pdfArea; // measure in area
+	float pdfDir; // measure in solid angle
+};
+
+struct LightLeSample {
+	Vector3f L;
+	Ray ray; // light emitted from the light source
+	Vector3f n;
+	float pdfArea; // measure in area
+	float pdfDir; // measure in direction
 };
 
 class AreaLight {
@@ -26,9 +31,11 @@ public:
 
 	Vector3f power() const { return m_area * m_lemit * M_PI; }
 
-	LightSample sampleLi(const Intersection& surfIts, const Vector2f& u) const;
+	LightLiSample sampleLi(const Intersection& surfIts, const Vector2f& u) const;
 
-	float pdf(const Intersection& lightIts, const Ray& ray) const;
+	LightLeSample sampleLe(const Vector2f& u1, const Vector2f& u2) const;
+
+	float pdfLi(const Intersection& lightIts, const Ray& ray) const;
 
 private:
 	Triangle* m_shape;

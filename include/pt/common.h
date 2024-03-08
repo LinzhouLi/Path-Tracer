@@ -1,4 +1,4 @@
-/*
+﻿/*
 	This file is part of Nori, a simple educational ray tracer
 
 	Copyright (c) 2015 by Wenzel Jakob
@@ -89,6 +89,29 @@ public:
 template <typename T>
 inline T mix(const T& a, const T& b, float f) {
     return a * (1.0 - f) + b * f;
+}
+
+inline Vector3f reflect(const Vector3f& w, const Vector3f& n) {
+	return -w + 2.0f * w.dot(n) * n;
+}
+
+/**
+* Shirley, P.et al. (2019).Sampling Transformations Zoo.In: Haines, E., Akenine - Möller, T.
+* (eds)Ray Tracing Gems.Apress, Berkeley, CA.https ://doi.org/10.1007/978-1-4842-4427-2_16
+*/
+
+inline Vector3f sampleCosineHemisphere(const Vector2f& u) {
+	float su0 = std::sqrt(u.x());
+	float phi = 2.0f * M_PI * u.y();
+	return Vector3f(su0 * std::cos(phi), su0 * std::sin(phi), std::sqrt(1.0f - u.x()));
+}
+
+
+inline Vector3f samplePhongSpecularLobe(const Vector2f& u, float s) {
+	float cos_theta = std::powf(u.x(), 1.0f / (s + 1.0f));
+	float sin_theta = std::sqrt(1.0f - cos_theta * cos_theta);
+	float phi = 2.0f * M_PI * u.y();
+	return Vector3f(sin_theta * std::cos(phi), sin_theta * std::sin(phi), cos_theta);
 }
 
 }

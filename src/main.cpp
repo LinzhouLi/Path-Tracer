@@ -31,8 +31,7 @@ static void renderBlock(Scene* scene, Sampler* sampler, Integrator* integrator, 
                 sampler->startPixelSample(pixel, s);
                 Vector2f pixelSample = pixel.cast<float>() + sampler->samplePixel2D();
 
-                Ray ray = scene->getCamera()->sampleRay(pixelSample);
-                Color3f value = integrator->Li(scene, sampler, ray);
+                Vector3f value = integrator->Li(scene, sampler, pixelSample);
 
                 block.put(pixelSample, value);
             }
@@ -44,6 +43,7 @@ static void render(Scene* scene, Sampler* sampler, Integrator* integrator) {
     Vector2i screenSize = scene->getCamera()->getScreenSize();
     BlockGenerator blockGenerator(screenSize, PT_BLOCK_SIZE);
     ImageBlock result(screenSize, scene->getFilter());
+    integrator->setResultBlock(&result);
     result.clear();
 
     GUI *gui = nullptr;

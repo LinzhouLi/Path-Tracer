@@ -8,12 +8,9 @@ namespace pt {
 struct BRDFSample;
 
 struct TriangleSample {
-	TriangleSample(const Vector3f& p_, const Vector3f& n_, float pdf_) :
-		p(p_), n(n_), pdf(pdf_) { }
-
 	Vector3f p;
 	Vector3f n;
-	float pdf; // area measure
+	float pdfArea;
 };
 
 class Triangle {
@@ -91,8 +88,9 @@ public:
 
 	Vector3f p;
 	Vector3f n; // shading normal
+	Vector3f ng; // geometric normal
 	Vector2f uv;
-	TangentSpace ts;
+	TangentSpace ts; // tangent space of shading normal
 
 private:
 	const Triangle* m_shape = nullptr;

@@ -57,7 +57,8 @@ void ImageBlock::fromBitmap(const Bitmap &bitmap) {
             coeffRef(y, x) << bitmap.coeff(y, x), 1;
 }
 
-void ImageBlock::put(const Vector2f &globalPos, const Color3f &value) {
+void ImageBlock::put(const Vector2f &globalPos, const Vector3f &value_) {
+    Color3f value(value_.x(), value_.y(), value_.z());
     if (!value.isValid()) {
         /* If this happens, go fix your code instead of removing this warning ;) */
         cerr << "Integrator: computed an invalid radiance value: " << value.toString() << endl;
@@ -70,6 +71,8 @@ void ImageBlock::put(const Vector2f &globalPos, const Color3f &value) {
     int boundMinY = std::max(int(std::ceil(localPos.y() - m_filterRadius)), 0);
     int boundMaxX = std::min(int(std::floor(localPos.x() + m_filterRadius)), int(cols() - 1));
     int boundMaxY = std::min(int(std::floor(localPos.y() + m_filterRadius)), int(rows() - 1));
+
+    tbb::mutex::scoped_lock lock(m_mutex);
 
     /* Lookup values from the pre-rasterized filter */
     for (int x = boundMinX, idx = 0; x <= boundMaxX; ++x, ++idx)

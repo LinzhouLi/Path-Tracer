@@ -3,31 +3,9 @@
 #include <pt/bitmap.h>
 #include <pt/shape.h>
 #include <pt/tangent.h>
+#include <pt/sampling.h>
 
 namespace pt {
-
-/**
-* Shirley, P.et al. (2019).Sampling Transformations Zoo.In: Haines, E., Akenine - Möller, T. 
-* (eds)Ray Tracing Gems.Apress, Berkeley, CA.https ://doi.org/10.1007/978-1-4842-4427-2_16
-*/
-
-Vector3f sampleCosineHemisphere(const Vector2f& u) {
-	float su0 = std::sqrt(u.x());
-	float phi = 2.0f * M_PI * u.y();
-	return Vector3f(su0 * std::cos(phi), su0 * std::sin(phi), std::sqrt(1.0f - u.x()));
-}
-
-inline Vector3f reflect(const Vector3f& w, const Vector3f& n) {
-	return -w + 2.0f * w.dot(n) * n;
-}
-
-Vector3f samplePhongSpecularLobe(const Vector2f& u, float s) {
-	float cos_theta = std::powf(u.x(), 1.0f / (s + 1.0f));
-	float sin_theta = std::sqrt(1.0f - cos_theta * cos_theta);
-	float phi = 2.0f * M_PI * u.y();
-	return Vector3f(sin_theta * std::cos(phi), sin_theta * std::sin(phi), cos_theta);
-}
-
 
 Vector3f Material::getBaseColor(const Vector2f& uv) const {
 	if (m_diffuse_texture) {

@@ -109,7 +109,7 @@ TriangleSample Triangle::sample(const Vector2f& u) const {
 	n.normalize();
 
 	float pdf = 1.0 / surfaceArea();
-	return TriangleSample(p, n, pdf);
+	return TriangleSample { p, n, pdf };
 }
 
 
@@ -126,11 +126,11 @@ void Intersection::complete() {
 
 	// normal
 	Vector3f n0, n1, n2;
+	ng = n = ((v0 - v2).cross(v1 - v2));
 	if (m_shape->getNormal(n0, n1, n2))
 		n = n0 * m_bary.x() + n1 * m_bary.y() + n2 * m_bary.z();
-	else
-		n = ((v0 - v2).cross(v1 - v2));
-	n.normalize();
+	n.normalize(); // shading normal
+	ng.normalize(); // geometric normal
 
 	// tangent
 	ts = TangentSpace(n);
@@ -144,7 +144,7 @@ void Intersection::complete() {
 Vector3f Intersection::Le(const Vector3f& w) const {
 	AreaLight* light = m_shape->getLight();
 	if (light) return light->L(n, w);
-	else return Vector3f(0.0f, 0.0f, 0.0f);
+	else return Vector3f(0.0f);
 }
 
 Vector3f Intersection::BRDF(const Vector3f& wo, const Vector3f& wi) const {
