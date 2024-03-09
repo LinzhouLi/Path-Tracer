@@ -79,7 +79,7 @@ float Vertex::convertPdfDensity(float pdf, const Vertex& nextVertex) const {
 	if (dist == 0.0f) return 0.0f;
 	if (nextVertex.type != VertexType::Camera) {
 		w /= dist;
-		pdf *= nextVertex.its.ng.dot(-w); // why ng?
+		pdf *= absDot(nextVertex.its.n, w); // why ng?
 	}
 	return pdf / (dist * dist);
 }
@@ -142,7 +142,7 @@ float Vertex::pdf(const Vertex* prev, const Vertex* next) const {
 
 	Vector3f wp;
 	if (prev) {
-		wp = next->its.p - this->its.p;
+		wp = prev->its.p - this->its.p;
 		float dist = wp.norm();
 		if (dist == 0.0f) return 0.0f;
 		wp /= dist;
@@ -346,8 +346,10 @@ Vector3f BDPTIntegrator::connectCameraPathWithLight(
 		L = vt.beta.cwiseProduct(vt.its.Le(w));
 	}
 
-	//L *= computeMISWeight(scene, sampledVertex, lightVertices, cameraVertices, 0, t);
-	return L;
+	float weight = 1.0f;
+	if (L.squaredNorm() != 0.0f)
+		weight = computeMISWeight(scene, sampledVertex, lightVertices, cameraVertices, 0, t);
+	return L * weight;
 }
 
 Vector3f BDPTIntegrator::connectPathSampleLight(
@@ -377,8 +379,10 @@ Vector3f BDPTIntegrator::connectPathSampleLight(
 			.cwiseProduct(sampledVertex.beta) * absDot(vt.its.n, ls.wi);
 	}
 
-	//L *= computeMISWeight(scene, sampledVertex, lightVertices, cameraVertices, 1, t);
-	return L;
+	float weight = 1.0f;
+	if (L.squaredNorm() != 0.0f)
+		weight = computeMISWeight(scene, sampledVertex, lightVertices, cameraVertices, 1, t);
+	return L * weight;
 }
 
 std::optional<std::pair<Vector3f, Vector2f>> BDPTIntegrator::connectPathSampleCamera(
@@ -404,7 +408,9 @@ std::optional<std::pair<Vector3f, Vector2f>> BDPTIntegrator::connectPathSampleCa
 			.cwiseProduct(sampledVertex.beta) * absDot(vs.its.n, cs.wi);
 	}
 
-	//L *= computeMISWeight(scene, sampledVertex, lightVertices, cameraVertices, s, 1);
+	float weight = 1.0f;
+	if (L.squaredNorm() != 0.0f)
+		weight = computeMISWeight(scene, sampledVertex, lightVertices, cameraVertices, s, 1);
 	return std::make_pair(L, pixel.value());
 }
 
@@ -427,8 +433,10 @@ Vector3f BDPTIntegrator::connectPath(
 		if (L.squaredNorm() != 0.0f) L *= G(vs, vt);
 	}
 
-	//L *= computeMISWeight(scene, sampledVertex, lightVertices, cameraVertices, s, t);
-	return L;
+	float weight = 1.0f;
+	if (L.squaredNorm() != 0.0f)
+		weight = computeMISWeight(scene, sampledVertex, lightVertices, cameraVertices, s, t);
+	return L * weight;
 }
 
 }

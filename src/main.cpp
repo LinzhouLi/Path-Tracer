@@ -97,8 +97,8 @@ int main(int argc, char **argv) {
 
     // create scene
     Scene scene; // spp
-    scene.loadOBJ("D:/code/Rendering/Path-Tracer/scenes/cornell-box/cornell-box.obj");
-    scene.loadXML("D:/code/Rendering/Path-Tracer/scenes/cornell-box/cornell-box.xml");
+    scene.loadOBJ("D:/code/Rendering/Path-Tracer/scenes/bathroom/bathroom.obj");
+    scene.loadXML("D:/code/Rendering/Path-Tracer/scenes/bathroom/bathroom.xml");
     scene.preprocess();
 
     // create sampler

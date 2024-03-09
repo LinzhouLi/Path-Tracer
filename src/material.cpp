@@ -92,7 +92,7 @@ float Material::pdf(const Vector3f& wo, const Vector3f& wi, const Intersection& 
 	float pdf_spec = (m_shininess + 1.0f) * INV_TWOPI * std::powf(cosRV, m_shininess);
 
 	// diffuse pdf
-	float cosTheta = wi.dot(its.n);
+	float cosTheta = absDot(wi, its.n); // may be incorrect
 	float pdf_diff = cosTheta * INV_PI;
 
 	return mix(pdf_diff, pdf_spec, specProb);

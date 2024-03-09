@@ -47,7 +47,7 @@ public:
 
 class BDPTIntegrator : public Integrator {
 public:
-	static constexpr int MaxDepth = 4;
+	static constexpr int MaxDepth = 5;
 
 	void preprocess(Scene* scene) {
 		cout << "BDPT PathIntegrator!" << endl;
