@@ -113,6 +113,17 @@ TriangleSample Triangle::sample(const Vector2f& u) const {
 }
 
 
+Intersection& Intersection::operator= (const Intersection& cls) {
+	p = cls.p;
+	n = cls.n;
+	ng = cls.ng;
+	uv = cls.uv;
+	ts = cls.ts;
+	m_shape = cls.m_shape;
+	m_bary = cls.m_bary;
+	return *this;
+}
+
 void Intersection::setInfo(const Triangle* shape, const Vector3f& bary) {
 	m_shape = shape;
 	m_bary = bary;

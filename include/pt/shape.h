@@ -66,6 +66,8 @@ class Intersection {
 public:
 	Intersection() : ts(Vector3f(0.0f, 0.0f, 1.0f)) { }
 
+	Intersection& operator= (const Intersection& cls);
+
 	void setInfo(const Triangle* shape, const Vector3f& bary);
 
 	const Triangle* getShape() const { return m_shape; }

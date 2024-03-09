@@ -47,7 +47,7 @@ public:
 
 class BDPTIntegrator : public Integrator {
 public:
-	static constexpr int MaxDepth = 5;
+	static constexpr int MaxDepth = 4;
 
 	void preprocess(Scene* scene) {
 		cout << "BDPT PathIntegrator!" << endl;
@@ -64,10 +64,13 @@ private:
 		Vector3f beta, float pdf, int maxDepth, TransportMode mode
 	) const;
 
-	Vector3f connectLightPath(
-		Scene* scene, Sampler* sampler, 
-		Vertex* lightVertices, Vertex* cameraVertices,
+	Vector3f connectPath(
+		Scene* scene, Vertex* lightVertices, Vertex* cameraVertices,
 		int s, int t
+	) const;
+
+	Vector3f connectCameraPathWithLight(
+		Scene* scene, Vertex* lightVertices, Vertex* cameraVertices, int t
 	) const;
 
 	Vector3f connectPathSampleLight(
