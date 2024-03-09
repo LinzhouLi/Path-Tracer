@@ -5,6 +5,14 @@
 
 namespace pt {
 
+struct CameraLiSample {
+	Vector3f L; // energy loss of camera receiving light
+	Vector3f wi; // incident "camear light" direction
+	Vector3f p; // world position
+	Vector2f pixel; // pixel position
+	float pdfDir; // measure in direction
+};
+
 class Camera {
 public:
 	const static float cnear; // 'near' & 'far' are defined in somewhere else
@@ -25,11 +33,17 @@ public:
 
 	Ray sampleRay(const Vector2f screen_pos);
 
-	std::optional<Vector2f> project(const Vector3f& p);
+	Vector2f project(const Vector3f& p);
+
+	std::pair<Vector3f, Vector2f> Le(const Ray& ray);
+
+	float pdfLe(const Ray& ray);
+
+	CameraLiSample sampleLi(const Intersection& surfIts, const Vector2f& u);
 
 private:
 	uint32_t m_width, m_height;
-	float m_fovy;
+	float m_fovy, m_sample_area;
 
 	Vector3f m_eye;
 	Vector3f m_lookat;

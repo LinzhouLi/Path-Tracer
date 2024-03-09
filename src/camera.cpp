@@ -1,4 +1,6 @@
 #include <pt/camera.h>
+#include <pt/ray.h>
+#include <pt/shape.h>
 
 namespace pt {
 
@@ -36,7 +38,7 @@ Eigen::Matrix4f computeProjectionMatrix(float aspect, float fovy, float near, fl
 	projection <<
 		cotx, 0.0, 0.0, 0.0,
 		0.0, coty, 0.0, 0.0,
-		0.0, 0.0, far / (far - near), -(far * near) / (far - near),
+		0.0, 0.0, far / (far - near), -(far * near) / (far - near), // z = zfar, depth = 1.0; z = znear, depth = 0.0
 		0.0, 0.0, 1.0, 0.0;
 	return projection;
 }
@@ -64,6 +66,13 @@ Camera::Camera(
 	m_camera2world.setMatrix(camera2world_mat);
 	m_world2camera.setMatrix(camera2world_mat.inverse());
 
+	// raster area (image plane bounds at z = 1.0)
+	Vector3f pMin = m_sample2camera.apply(Vector3f(0.0f, 0.0f, Camera::sample_z), Transform::Type::Scaler);
+	Vector3f pMax = m_sample2camera.apply(Vector3f(float(width), float(height), Camera::sample_z), Transform::Type::Scaler);
+	pMin /= pMin.z();
+	pMax /= pMax.z();
+	m_sample_area = std::abs((pMax.x() - pMin.x()) * (pMax.y() - pMin.y()));
+
 	// for projecton correction
 	Vector3f tmp_sample(0.5f * width, 0.5f * height, Camera::sample_z);
 	tmp_sample = m_sample2camera.apply(tmp_sample, Transform::Type::Scaler);
@@ -79,14 +88,58 @@ Ray Camera::sampleRay(const Vector2f screen_pos) {
 	return Ray(m_eye, d, Camera::cnear * proj, Camera::cfar * proj);
 }
 
-std::optional<Vector2f> Camera::project(const Vector3f& p) {
+Vector2f Camera::project(const Vector3f& p) {
 	Vector3f p_cam = m_world2camera.apply(p, Transform::Type::Scaler);
-	if (p_cam.z() < Camera::cnear || p_cam.z() > Camera::cfar)
-		return std::nullopt;
 	Vector3f p_ndc = m_camera2sample.apply(p_cam, Transform::Type::Scaler);
-	if (p_ndc.x() < 0 || p_ndc.x() > m_width || p_ndc.y() < 0 || p_ndc.y() > m_height)
-		return std::nullopt;
 	return Vector2f(p_ndc.x(), p_ndc.y());
+}
+
+// equation (16.4) from PBRT-v3
+// https://www.pbr-book.org/3ed-2018/Light_Transport_III_Bidirectional_Methods/The_Path-Space_Measurement_Equation#eq:importance-area
+std::pair<Vector3f, Vector2f> Camera::Le(const Ray& ray) { // 'W_e' in the equation 
+	Vector3f L = Vector3f(0.0f);
+	Vector2f pixel = Vector2f(-1.0f);
+
+	Vector3f camForward = (m_lookat - m_eye).normalized();
+	float cosTheta = camForward.dot(ray.dir); // ray face forward
+	if (cosTheta <= 0.0f) return std::make_pair(L, pixel);
+
+	Vector3f p_world = ray.org + ray.dir * (1.0f / cosTheta);
+	Vector3f p_cam = m_world2camera.apply(p_world, Transform::Type::Scaler);
+	Vector3f p_ndc = m_camera2sample.apply(p_cam, Transform::Type::Scaler);
+
+	if (
+		p_ndc.z() < 0.0f || p_ndc.z() > 1.0f ||
+		p_ndc.x() < 0.0f || p_ndc.x() > float(m_width) ||
+		p_ndc.y() < 0.0f || p_ndc.y() > float(m_height)
+	) return std::make_pair(L, pixel);
+
+	float cosTheta2 = cosTheta * cosTheta;
+	L = Vector3f(1.0f / cosTheta2 * cosTheta2);
+	pixel = Vector2f(p_ndc.x(), p_ndc.y());
+	return std::make_pair(L, pixel);
+}
+
+float Camera::pdfLe(const Ray& ray) {
+	Vector3f camForward = (m_lookat - m_eye).normalized();
+	float cosTheta = camForward.dot(ray.dir);
+	if (cosTheta <= 0.0f) return 0.0f;
+
+	float pdfArea = 1.0f;
+	float pdfDir = 1 / (m_sample_area * cosTheta * cosTheta * cosTheta);
+	return pdfDir;
+}
+
+CameraLiSample Camera::sampleLi(const Intersection& surfIts, const Vector2f& u) {
+	Vector3f wi = m_eye - surfIts.p;
+	Vector3f camForward = (m_lookat - m_eye).normalized();
+	float dist = wi.norm();
+	wi /= dist;
+
+	float pdfArea = 1.0f;
+	float pdfDir = pdfArea * dist * dist / absDot(camForward, wi);
+	auto [L, pixel] = Le(Ray(m_eye, -wi, 0.0f));
+	return CameraLiSample { L, wi, m_eye, pixel, pdfDir };
 }
 
 };

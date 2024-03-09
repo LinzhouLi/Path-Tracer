@@ -65,8 +65,14 @@ void ImageBlock::put(const Vector2f &globalPos, const Vector3f &value_) {
         return;
     }
 
+    Vector2f localPos = globalPos - m_offset.cast<float>();
+    if (
+        localPos.x() < 0.0f || localPos.x() >= m_size.x() ||
+        localPos.y() < 0.0f || localPos.y() >= m_size.y()
+    ) return;
+
     /* Compute the rectangle of pixels that will need to be updated */
-    Vector2f localPos = globalPos - m_offset.cast<float>() + Vector2f(m_borderSize);
+    localPos += Vector2f(m_borderSize);
     int boundMinX = std::max(int(std::ceil(localPos.x() - m_filterRadius)), 0);
     int boundMinY = std::max(int(std::ceil(localPos.y() - m_filterRadius)), 0);
     int boundMaxX = std::min(int(std::floor(localPos.x() + m_filterRadius)), int(cols() - 1));

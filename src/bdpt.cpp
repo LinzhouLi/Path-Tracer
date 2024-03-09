@@ -55,11 +55,10 @@ inline Vertex Vertex::createFromLight(const AreaLight* light, const Vector3f& po
 	return v;
 }
 
-inline Vertex Vertex::createFromCamera(const Camera* camera, const Vector3f& position, const Vector3f& dir, const Vector3f& beta) {
+inline Vertex Vertex::createFromCamera(const Camera* camera, const Vector3f& position, const Vector3f& beta) {
 	Vertex v;
 	v.type = VertexType::Camera;
 	v.its.p = position;
-	v.its.n = v.its.ng = dir;
 	v.camera = camera;
 	v.beta = beta;
 	return v;
@@ -156,12 +155,13 @@ int BDPTIntegrator::randomWalk(
 int BDPTIntegrator::generateCameraSubpath(Scene* scene, Sampler* sampler, Vertex* path, const Vector2f& pixelSample, int maxDepth) const {
 	if (maxDepth == 0) return 0;
 
-	float beta = 1.0f, pdf = 0.0f;
+	Vector3f beta(1.0f);
 	Ray ray = scene->getCamera()->sampleRay(pixelSample);
-	path[0] = Vertex::createFromCamera(scene->getCamera(), ray.org, ray.dir, beta);
+	path[0] = Vertex::createFromCamera(scene->getCamera(), ray.org, beta);
+	float pdfDir = scene->getCamera()->pdfLe(ray);
 	int numVertices = randomWalk(
 		scene, sampler, path + 1, ray,
-		beta, pdf, maxDepth - 1, TransportMode::Radiance
+		beta, pdfDir, maxDepth - 1, TransportMode::Radiance
 	);
 	return numVertices + 1;
 }
@@ -234,20 +234,20 @@ Vector3f BDPTIntegrator::connectLightPath(
 		const Vertex& vt = cameraVertices[t - 1];
 		L = vt.Le(cameraVertices[t - 2]).cwiseProduct(vt.beta);
 	}
-	else if (t == 1) {
+	else if (t == 1) { // resample a point on a camera and connect it to the light subpath.
 		const Vertex& vs = lightVertices[s - 1];
 		const Vertex& vs_prev = lightVertices[s - 2];
-		const Vertex& vt = cameraVertices[0]; // do not resample
-		Vector3f wi = vt.its.p - vs.its.p;
-		float dist = wi.norm();
-		if (scene->unocculded(vs.its.p, vt.its.p, vs.its.n) && dist != 0.0f) {
-			auto result = scene->getCamera()->project(vs.its.p);
-			if (result.has_value()) { // vs is visible in ndc space
-				wi /= dist;
-				pixelSample = result.value(); // update pixel sample
-				L = vs.beta.cwiseProduct(vs.BRDF(vs_prev, vt, TransportMode::Importance)) *
-					absDot(vs.its.n, wi) / (dist * dist);
-			}
+		
+		CameraLiSample cs = scene->getCamera()->sampleLi(vs.its, sampler->sample2D());
+		pixelSample = cs.pixel;
+		if (
+			cs.pdfDir != 0.0f && cs.L.squaredNorm() != 0.0f &&
+			scene->unocculded(vs.its.p, cs.p, vs.its.n) // visibility test
+		) {
+			sampledVertex = Vertex::createFromCamera(scene->getCamera(), cs.p, cs.L / cs.pdfDir);
+			L = vs.beta
+				.cwiseProduct(vs.BRDF(vs_prev, sampledVertex, TransportMode::Importance))
+				.cwiseProduct(sampledVertex.beta) * absDot(vs.its.n, cs.wi);
 		}
 	}
 	else if (s == 1) { // resample a point on a light and connect it to the camera subpath.
@@ -299,6 +299,8 @@ Vector3f BDPTIntegrator::Li(Scene* scene, Sampler* sampler, const Vector2f& pixe
 	Vertex cameraVertices[MaxDepth + 2], lightVertices[MaxDepth + 1];
 	int numCameraVs = generateCameraSubpath(scene, sampler, cameraVertices, pixelSample, MaxDepth + 2);
 	int numLightVs = generateLightSubpath(scene, sampler, lightVertices, MaxDepth + 1);
+	numCameraVs == 2;
+	numLightVs == 1;
 
 	// connect subpaths and compute contribution
 	for (int t = 1; t <= numCameraVs; t++) {
@@ -309,14 +311,13 @@ Vector3f BDPTIntegrator::Li(Scene* scene, Sampler* sampler, const Vector2f& pixe
 			Vector2f newPixelSample = pixelSample;
 			Vector3f Lpath = connectLightPath(scene, sampler, lightVertices, cameraVertices, s, t, newPixelSample);
 
-			if (t == 1) m_block->put(newPixelSample, Lpath);
-			else L += Lpath;
+			//if (t == 1) m_block->put(newPixelSample, Lpath);
+			//else L += Lpath;
+			if(s == 1 && t == 2) L += Lpath;
 		}
 	}
 
 	return L;
-
-	//return connectLightPath(scene, sampler, lightVertices, cameraVertices, 0, 2, Vector2f());
 }
 
 }
