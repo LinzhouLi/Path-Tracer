@@ -88,36 +88,26 @@ Ray Camera::sampleRay(const Vector2f screen_pos) {
 	return Ray(m_eye, d, Camera::cnear * proj, Camera::cfar * proj);
 }
 
-Vector2f Camera::project(const Vector3f& p) {
+std::optional<Vector2f> Camera::project(const Vector3f& p) {
 	Vector3f p_cam = m_world2camera.apply(p, Transform::Type::Scaler);
 	Vector3f p_ndc = m_camera2sample.apply(p_cam, Transform::Type::Scaler);
+	if (
+		p_ndc.z() < 0.0f || p_ndc.z() > 1.0f ||
+		p_ndc.x() < 0.0f || p_ndc.x() > float(m_width) ||
+		p_ndc.y() < 0.0f || p_ndc.y() > float(m_height)
+	) return std::nullopt;
 	return Vector2f(p_ndc.x(), p_ndc.y());
 }
 
 // equation (16.4) from PBRT-v3
 // https://www.pbr-book.org/3ed-2018/Light_Transport_III_Bidirectional_Methods/The_Path-Space_Measurement_Equation#eq:importance-area
-std::pair<Vector3f, Vector2f> Camera::Le(const Ray& ray) { // 'W_e' in the equation 
-	Vector3f L = Vector3f(0.0f);
-	Vector2f pixel = Vector2f(-1.0f);
-
+Vector3f Camera::Le(const Vector3f& w) { // 'W_e' in the equation 
 	Vector3f camForward = (m_lookat - m_eye).normalized();
-	float cosTheta = camForward.dot(ray.dir); // ray face forward
-	if (cosTheta <= 0.0f) return std::make_pair(L, pixel);
-
-	Vector3f p_world = ray.org + ray.dir * (1.0f / cosTheta);
-	Vector3f p_cam = m_world2camera.apply(p_world, Transform::Type::Scaler);
-	Vector3f p_ndc = m_camera2sample.apply(p_cam, Transform::Type::Scaler);
-
-	if (
-		p_ndc.z() < 0.0f || p_ndc.z() > 1.0f ||
-		p_ndc.x() < 0.0f || p_ndc.x() > float(m_width) ||
-		p_ndc.y() < 0.0f || p_ndc.y() > float(m_height)
-	) return std::make_pair(L, pixel);
+	float cosTheta = camForward.dot(w);
+	if (cosTheta <= 0.0f) return Vector3f(0.0f);
 
 	float cosTheta2 = cosTheta * cosTheta;
-	L = Vector3f(1.0f / cosTheta2 * cosTheta2);
-	pixel = Vector2f(p_ndc.x(), p_ndc.y());
-	return std::make_pair(L, pixel);
+	return Vector3f(1.0f / cosTheta2 * cosTheta2);
 }
 
 float Camera::pdfLe(const Ray& ray) {
@@ -125,8 +115,8 @@ float Camera::pdfLe(const Ray& ray) {
 	float cosTheta = camForward.dot(ray.dir);
 	if (cosTheta <= 0.0f) return 0.0f;
 
-	float pdfArea = 1.0f;
-	float pdfDir = 1 / (m_sample_area * cosTheta * cosTheta * cosTheta);
+	//float pdfArea = 1.0f;
+	float pdfDir = 1.0f / (m_sample_area * cosTheta * cosTheta * cosTheta);
 	return pdfDir;
 }
 
@@ -136,10 +126,9 @@ CameraLiSample Camera::sampleLi(const Intersection& surfIts, const Vector2f& u) 
 	float dist = wi.norm();
 	wi /= dist;
 
-	float pdfArea = 1.0f;
-	float pdfDir = pdfArea * dist * dist / absDot(camForward, wi);
-	auto [L, pixel] = Le(Ray(m_eye, -wi, 0.0f));
-	return CameraLiSample { L, wi, m_eye, pixel, pdfDir };
+	float pdfDir = dist * dist / absDot(camForward, wi);
+	Vector3f L = Le(-wi);
+	return CameraLiSample { L, wi, m_eye, pdfDir };
 }
 
 };

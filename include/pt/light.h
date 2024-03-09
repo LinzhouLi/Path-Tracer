@@ -37,6 +37,10 @@ public:
 
 	float pdfLi(const Intersection& lightIts, const Ray& ray) const;
 
+	float pdfArea() const { return 1.0 / m_area; } // TODO: refactor
+
+	float pdfDir(const Vector3f& w, const Vector3f& n) const { return w.dot(n) * INV_PI; } // TODO: refactor
+
 private:
 	Triangle* m_shape;
 	Vector3f m_lemit;

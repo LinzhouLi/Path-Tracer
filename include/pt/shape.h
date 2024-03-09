@@ -70,9 +70,9 @@ public:
 
 	const Triangle* getShape() const { return m_shape; }
 
-	const Material* getMaterial() const { return m_shape->getMaterial(); }
+	const Material* getMaterial() const { return m_shape ? m_shape->getMaterial() : nullptr; }
 
-	const AreaLight* getLight() const { return m_shape->getLight(); }
+	const AreaLight* getLight() const { return m_shape ? m_shape->getLight() : nullptr; }
 
 	void complete();
 

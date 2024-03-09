@@ -23,6 +23,7 @@ namespace pt {
 		return true;
 	}
 
+
 float correctShadingNormal(const Intersection& its, const Vector3f& wo, const Vector3f& wi, TransportMode mode) {
 	if (mode == TransportMode::Radiance) {
 		return 1.0f;
@@ -44,7 +45,7 @@ float G(const Vertex& a, const Vertex& b) {
 }
 
 
-inline Vertex Vertex::createFromLight(const AreaLight* light, const Vector3f& position, const Vector3f& normal, const Vector3f& Le, float pdf) {
+inline Vertex Vertex::createFromLight(AreaLight* light, const Vector3f& position, const Vector3f& normal, const Vector3f& Le, float pdf) {
 	Vertex v;
 	v.type = VertexType::Light;
 	v.its.p = position;
@@ -55,7 +56,7 @@ inline Vertex Vertex::createFromLight(const AreaLight* light, const Vector3f& po
 	return v;
 }
 
-inline Vertex Vertex::createFromCamera(const Camera* camera, const Vector3f& position, const Vector3f& beta) {
+inline Vertex Vertex::createFromCamera(Camera* camera, const Vector3f& position, const Vector3f& beta) {
 	Vertex v;
 	v.type = VertexType::Camera;
 	v.its.p = position;
@@ -106,6 +107,51 @@ Vector3f Vertex::BRDF(const Vertex& preVertex, const Vertex& nextVertex, Transpo
 	wo.normalize();
 
 	return its.BRDF(wo, wi) * correctShadingNormal(its, wo, wi, mode);
+}
+
+float Vertex::pdfLightOrigin(Scene* scene, const Vertex* v) const {
+	Vector3f w = v->its.p - this->its.p;
+	float dist = w.norm();
+	if (dist == 0.0f) return 0.0f;
+	w /= dist;
+
+	const AreaLight* lit = type == VertexType::Light ? light : its.getLight();
+	float pdfSelect = scene->getLightSelector()->pdf(lit);
+	float pdfArea = lit->pdfArea();
+	return pdfArea * pdfSelect;
+}
+
+float Vertex::pdfLight(const Vertex* v) const {
+	Vector3f w = v->its.p - this->its.p;
+	float dist = w.norm();
+	if (dist == 0.0f) return 0.0f;
+	w /= dist;
+
+	const AreaLight* lit = type == VertexType::Light ? light : its.getLight();
+	float pdfDir = lit->pdfDir(w, its.n);
+	return absDot(v->its.n, w) * pdfDir / (dist * dist);
+}
+
+float Vertex::pdf(const Vertex* prev, const Vertex* next) const {
+	if (type == VertexType::Light) return pdfLight(next);
+
+	Vector3f wn = next->its.p - this->its.p;
+	float dist = wn.norm();
+	if (dist == 0.0f) return 0.0f;
+	wn /= dist;
+
+	Vector3f wp;
+	if (prev) {
+		wp = next->its.p - this->its.p;
+		float dist = wp.norm();
+		if (dist == 0.0f) return 0.0f;
+		wp /= dist;
+	}
+
+	float pdf;
+	if (type == VertexType::Camera) pdf = this->camera->pdfLe(Ray(its.p, wn, 0.0f));
+	else if (type == VertexType::Surface) pdf = its.pdfBRDF(wn, wp);
+	return convertPdfDensity(pdf, *next);
 }
 
 
@@ -175,10 +221,10 @@ int BDPTIntegrator::generateLightSubpath(Scene* scene, Sampler* sampler, Vertex*
 
 	// sample outgoing ray from light
 	LightLeSample ls = light->sampleLe(sampler->sample2D(), sampler->sample2D());
-	if (ls.pdfDir == 0.0f || ls.L.squaredNorm() == 0.0f) return 0;
+	if (ls.pdfArea == 0.0f || ls.pdfDir == 0.0f || ls.L.squaredNorm() == 0.0f) return 0;
 
 	// create first vertex
-	Vector3f beta = ls.L * ls.n.dot(ls.ray.dir) / (ls.pdfArea * ls.pdfDir * selectPdf);
+	Vector3f beta = ls.L * absDot(ls.n, ls.ray.dir) / (ls.pdfArea * ls.pdfDir * selectPdf);
 	path[0] = Vertex::createFromLight(light, ls.ray.org, ls.n, ls.L, ls.pdfArea * selectPdf);
 
 	// sample other vertices
@@ -190,7 +236,7 @@ int BDPTIntegrator::generateLightSubpath(Scene* scene, Sampler* sampler, Vertex*
 }
 
 float BDPTIntegrator::computeMISWeight(
-	Scene* scene,
+	Scene* scene, Vertex& sampled,
 	Vertex* lightVertices, Vertex* cameraVertices,
 	int s, int t
 ) const {
@@ -200,10 +246,30 @@ float BDPTIntegrator::computeMISWeight(
 	// deals with Dirac delta functions
 	auto remap0 = [](float f) -> float { return f != 0.0f ? f : 1.0f; };
 
-	float vtPdfRev;
-	float vtPrevPdfRev;
-	float vsPdfRev;
-	float vsPrevPdfRev;
+	// Look up connection vertices and their predecessors
+	Vertex* qs = s > 0 ? &lightVertices[s - 1] : nullptr;
+	Vertex* pt = t > 0 ? &cameraVertices[t - 1] : nullptr;
+	Vertex* qsMinus = s > 1 ? &lightVertices[s - 2] : nullptr;
+	Vertex* ptMinus = t > 1 ? &cameraVertices[t - 2] : nullptr;
+
+	// Update sampled vertex for $s=1$ or $t=1$ strategy
+	ScopedAssignment<Vertex> a1;
+	if (s == 1) a1 = { qs, sampled };
+	else if (t == 1) a1 = { pt, sampled };
+
+	// Update reverse density of vertex $\pt{}_{t-1}$
+	ScopedAssignment<float> a4;
+	if (pt) a4 = { &pt->pdfAreaRev, s > 0 ? qs->pdf(qsMinus, pt) : pt->pdfLightOrigin(scene, ptMinus) };
+
+	// Update reverse density of vertex $\pt{}_{t-2}$
+	ScopedAssignment<float> a5;
+	if (ptMinus) a5 = { &ptMinus->pdfAreaRev, s > 0 ? pt->pdf(qs, ptMinus) : pt->pdfLight(ptMinus) };
+
+	// Update reverse density of vertices $\pq{}_{s-1}$ and $\pq{}_{s-2}$
+	ScopedAssignment<float> a6;
+	if (qs) a6 = { &qs->pdfAreaRev, pt->pdf(ptMinus, qs) };
+	ScopedAssignment<float> a7;
+	if (qsMinus) a7 = { &qsMinus->pdfAreaRev, qs->pdf(pt, qsMinus) };
 
 	// Consider hypothetical connection strategies along the camera subpath
 	float ri = 1;
@@ -221,10 +287,103 @@ float BDPTIntegrator::computeMISWeight(
 	return 1 / (1 + sumRi);
 }
 
+
+Vector3f BDPTIntegrator::Li(Scene* scene, Sampler* sampler, const Vector2f& pixelSample) {
+	Vector3f L(0.0);
+
+	// generate subpaths
+	Vertex cameraVertices[MaxDepth + 2], lightVertices[MaxDepth + 1];
+	int numCameraVs = generateCameraSubpath(scene, sampler, cameraVertices, pixelSample, MaxDepth + 2);
+	int numLightVs = generateLightSubpath(scene, sampler, lightVertices, MaxDepth + 1);
+
+	// connect subpaths and compute contribution
+	for (int t = 1; t <= numCameraVs; t++) {
+		for (int s = 0; s <= numLightVs; s++) {
+			int depth = t + s - 2;
+			if ((s == 1 && t == 1) || depth < 0 || depth > MaxDepth) continue;
+
+			if (t == 1) { // resample a point on a camera and connect it to the light subpath.
+				auto ret = connectPathSampleCamera(scene, sampler, lightVertices, cameraVertices, s);
+				if (ret.has_value()) {
+					auto& [Lpath, pixel] = ret.value();
+					m_block->put(pixel, Lpath);
+				}
+			}
+			else if (s == 1) {// resample a point on a light and connect it to the camera subpath.
+				L += connectPathSampleLight(scene, sampler, lightVertices, cameraVertices, t);
+			}
+			else {
+				L += connectLightPath(scene, sampler, lightVertices, cameraVertices, s, t);
+			}
+
+		}
+	}
+
+	return L;
+}
+
+Vector3f BDPTIntegrator::connectPathSampleLight(
+	Scene* scene, Sampler* sampler,
+	Vertex* lightVertices, Vertex* cameraVertices, int t
+) const {
+	Vector3f L(0.0);
+	Vertex sampledVertex;
+
+	const Vertex& vt = cameraVertices[t - 1];
+	const Vertex& vt_prev = cameraVertices[t - 2];
+
+	// select light
+	AreaLight* light = scene->getLightSelector()->select(sampler->sample1D());
+	float selectPdf = scene->getLightSelector()->pdf(light);
+
+	// sample incident ray on the light shape
+	LightLiSample ls = light->sampleLi(vt.its, sampler->sample2D());
+	if (
+		ls.pdfDir != 0.0f && ls.L.squaredNorm() != 0.0f &&
+		scene->unocculded(vt.its.p, ls.p, vt.its.n, ls.n) // visibility test
+		) {
+		float pdfLight = ls.pdfDir * selectPdf;
+		sampledVertex = Vertex::createFromLight(light, ls.p, ls.n, ls.L / pdfLight, 0.0f);
+		L = vt.beta
+			.cwiseProduct(vt.BRDF(vt_prev, sampledVertex, TransportMode::Radiance))
+			.cwiseProduct(sampledVertex.beta) * absDot(vt.its.n, ls.wi);
+	}
+
+	//L *= computeMISWeight(scene, sampledVertex, lightVertices, cameraVertices, 1, t);
+	return L;
+}
+
+std::optional<std::pair<Vector3f, Vector2f>> BDPTIntegrator::connectPathSampleCamera(
+	Scene* scene, Sampler* sampler,
+	Vertex* lightVertices, Vertex* cameraVertices, int s
+) const {
+	Vector3f L(0.0);
+	Vertex sampledVertex;
+
+	const Vertex& vs = lightVertices[s - 1];
+	const Vertex& vs_prev = lightVertices[s - 2];
+
+	Camera* camera = scene->getCamera(); // only one camera, no need to select
+
+	CameraLiSample cs = camera->sampleLi(vs.its, sampler->sample2D());
+	auto pixel = camera->project(vs.its.p);
+	if (!pixel.has_value() || !scene->unocculded(vs.its.p, cs.p, vs.its.n)) return std::nullopt;
+
+	if (cs.pdfDir != 0.0f && cs.L.squaredNorm() != 0.0f) {
+		sampledVertex = Vertex::createFromCamera(camera, cs.p, cs.L / cs.pdfDir);
+		L = vs.beta
+			.cwiseProduct(vs.BRDF(vs_prev, sampledVertex, TransportMode::Importance))
+			.cwiseProduct(sampledVertex.beta) * absDot(vs.its.n, cs.wi);
+	}
+
+	//L *= computeMISWeight(scene, sampledVertex, lightVertices, cameraVertices, s, 1);
+	return std::make_pair(L, pixel.value());
+}
+
 Vector3f BDPTIntegrator::connectLightPath(
 	Scene* scene, Sampler* sampler,
 	Vertex* lightVertices, Vertex* cameraVertices,
-	int s, int t, Vector2f& pixelSample
+	int s, int t
 ) const {
 	Vector3f L(0.0);
 	Vertex sampledVertex;
@@ -233,42 +392,6 @@ Vector3f BDPTIntegrator::connectLightPath(
 	if (s == 0) { // use full camera path, has energy only when the last vertex emits light
 		const Vertex& vt = cameraVertices[t - 1];
 		L = vt.Le(cameraVertices[t - 2]).cwiseProduct(vt.beta);
-	}
-	else if (t == 1) { // resample a point on a camera and connect it to the light subpath.
-		const Vertex& vs = lightVertices[s - 1];
-		const Vertex& vs_prev = lightVertices[s - 2];
-		
-		CameraLiSample cs = scene->getCamera()->sampleLi(vs.its, sampler->sample2D());
-		pixelSample = cs.pixel;
-		if (
-			cs.pdfDir != 0.0f && cs.L.squaredNorm() != 0.0f &&
-			scene->unocculded(vs.its.p, cs.p, vs.its.n) // visibility test
-		) {
-			sampledVertex = Vertex::createFromCamera(scene->getCamera(), cs.p, cs.L / cs.pdfDir);
-			L = vs.beta
-				.cwiseProduct(vs.BRDF(vs_prev, sampledVertex, TransportMode::Importance))
-				.cwiseProduct(sampledVertex.beta) * absDot(vs.its.n, cs.wi);
-		}
-	}
-	else if (s == 1) { // resample a point on a light and connect it to the camera subpath.
-		const Vertex& vt = cameraVertices[t - 1];
-		const Vertex& vt_prev = cameraVertices[t - 2];
-		// select light
-		AreaLight* light = scene->getLightSelector()->select(sampler->sample1D());
-		float selectPdf = scene->getLightSelector()->pdf(light);
-
-		// sample incident ray on the light shape
-		LightLiSample ls = light->sampleLi(vt.its, sampler->sample2D());
-		if (
-			ls.pdfDir != 0.0f && ls.L.squaredNorm() != 0.0f &&
-			scene->unocculded(vt.its.p, ls.p, vt.its.n, ls.n) // visibility test
-		) {
-			float pdfLight = ls.pdfDir * selectPdf;
-			sampledVertex = Vertex::createFromLight(light, ls.p, ls.n, ls.L / pdfLight, 0.0f);
-			L = vt.beta
-				.cwiseProduct(vt.BRDF(vt_prev, sampledVertex, TransportMode::Radiance))
-				.cwiseProduct(sampledVertex.beta) * absDot(vt.its.n, ls.wi);
-		}
 	}
 	else { // general cases
 		const Vertex& vs = lightVertices[s - 1];
@@ -284,39 +407,7 @@ Vector3f BDPTIntegrator::connectLightPath(
 		}
 	}
 
-	//if (L.squaredNorm() > 0.0f) {
-	//	if (s == 1) std::swap(lightVertices[0], sampledVertex);
-	//	L *= computeMISWeight(scene, lightVertices, cameraVertices, s, t);
-	//	if (s == 1) std::swap(lightVertices[0], sampledVertex);
-	//}
-	return L;
-}
-
-Vector3f BDPTIntegrator::Li(Scene* scene, Sampler* sampler, const Vector2f& pixelSample) {
-	Vector3f L(0.0);
-
-	// generate subpaths
-	Vertex cameraVertices[MaxDepth + 2], lightVertices[MaxDepth + 1];
-	int numCameraVs = generateCameraSubpath(scene, sampler, cameraVertices, pixelSample, MaxDepth + 2);
-	int numLightVs = generateLightSubpath(scene, sampler, lightVertices, MaxDepth + 1);
-	numCameraVs == 2;
-	numLightVs == 1;
-
-	// connect subpaths and compute contribution
-	for (int t = 1; t <= numCameraVs; t++) {
-		for (int s = 0; s <= numLightVs; s++) {
-			int depth = t + s - 2;
-			if ((s == 1 && t == 1) || depth < 0 || depth > MaxDepth) continue;
-
-			Vector2f newPixelSample = pixelSample;
-			Vector3f Lpath = connectLightPath(scene, sampler, lightVertices, cameraVertices, s, t, newPixelSample);
-
-			//if (t == 1) m_block->put(newPixelSample, Lpath);
-			//else L += Lpath;
-			if(s == 1 && t == 2) L += Lpath;
-		}
-	}
-
+	//L *= computeMISWeight(scene, sampledVertex, lightVertices, cameraVertices, s, t);
 	return L;
 }
 

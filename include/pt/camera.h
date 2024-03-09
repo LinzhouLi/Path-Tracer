@@ -9,7 +9,6 @@ struct CameraLiSample {
 	Vector3f L; // energy loss of camera receiving light
 	Vector3f wi; // incident "camear light" direction
 	Vector3f p; // world position
-	Vector2f pixel; // pixel position
 	float pdfDir; // measure in direction
 };
 
@@ -33,9 +32,9 @@ public:
 
 	Ray sampleRay(const Vector2f screen_pos);
 
-	Vector2f project(const Vector3f& p);
+	std::optional<Vector2f> project(const Vector3f& p);
 
-	std::pair<Vector3f, Vector2f> Le(const Ray& ray);
+	Vector3f Le(const Vector3f& w);
 
 	float pdfLe(const Ray& ray);
 
