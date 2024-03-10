@@ -57,7 +57,7 @@ void ImageBlock::fromBitmap(const Bitmap &bitmap) {
             coeffRef(y, x) << bitmap.coeff(y, x), 1;
 }
 
-void ImageBlock::put(const Vector2f &globalPos, const Vector3f &value_) {
+void ImageBlock::put(const Vector2f &globalPos, const Vector3f &value_, float weight) {
     Color3f value(value_.x(), value_.y(), value_.z());
     if (!value.isValid()) {
         /* If this happens, go fix your code instead of removing this warning ;) */
@@ -88,7 +88,20 @@ void ImageBlock::put(const Vector2f &globalPos, const Vector3f &value_) {
 
     for (int y = boundMinY, yr = 0; y <= boundMaxY; ++y, ++yr)
         for (int x = boundMinX, xr = 0; x <= boundMaxX; ++x, ++xr)
-            coeffRef(y, x) += Color4f(value) * m_weightsX[xr] * m_weightsY[yr];
+            coeffRef(y, x) += Color4f(value, weight) * m_weightsX[xr] * m_weightsY[yr];
+}
+
+void ImageBlock::putValue(const Vector2f& globalPos, const Vector3f& value_) {
+    Color3f value(value_.x(), value_.y(), value_.z());
+
+    Vector2i localPos = globalPos.cast<int>() - m_offset;
+    if (
+        localPos.x() < 0.0f || localPos.x() >= m_size.x() ||
+        localPos.y() < 0.0f || localPos.y() >= m_size.y()
+    ) return;
+
+    localPos += Vector2i(m_borderSize);
+    coeffRef(localPos.y(), localPos.x()) += Color4f(value, 0.0f);
 }
     
 void ImageBlock::put(ImageBlock &b) {

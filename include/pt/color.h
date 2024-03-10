@@ -116,7 +116,7 @@ public:
     Color4f() : Base(0.0f, 0.0f, 0.0f, 0.0f) { }
 
     /// Create from a 3-channel color
-    Color4f(const Color3f &c) : Base(c.r(), c.g(), c.b(), 1.0f) { }
+    Color4f(const Color3f &c, float weight = 1.0) : Base(c.r(), c.g(), c.b(), weight) { }
 
     /// Initialize the color vector with specific per-channel values
     Color4f(float r, float g, float b, float w) : Base(r, g, b, w) { }

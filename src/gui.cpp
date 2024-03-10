@@ -16,7 +16,7 @@
 
 namespace pt {
 
-#define PIXEL_RATIO 1.00 // fix pixel ratio problem
+#define PIXEL_RATIO 1.75 // fix pixel ratio problem
 
 GUI::GUI(const ImageBlock &block) : 
     nanogui::Screen(
@@ -85,7 +85,8 @@ GUI::GUI(const ImageBlock &block) :
         }
         void main() {
             vec4 color = texture(source, uv);
-            color *= scale / color.w;
+            if (color.w > 0.0) color *= scale / color.w;
+            else color = vec4(0, 0, 0, 1);
             out_color = vec4(toSRGB(color.r), toSRGB(color.g), toSRGB(color.b), 1);
         })"
     );
