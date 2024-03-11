@@ -37,7 +37,7 @@ void Scene::loadOBJ(const std::string& filename) {
 	bool sucess = reader.ParseFromFile(filename, reader_config);
 
 	if (!sucess)
-		throw PathTracerException("Fail to read!");
+		throw PathTracerException("%s", reader.Error());
 
 	const tinyobj::attrib_t& attrib = reader.GetAttrib();
 	const std::vector<tinyobj::shape_t>& shapes = reader.GetShapes();
@@ -73,9 +73,9 @@ void Scene::loadOBJ(const std::string& filename) {
 			mtl_ids.push_back(shape.mesh.material_ids[f] + this->m_materials.size()); // local mtl id -> global mtl id
 			for (size_t v : {0, 1, 2}) {
 				tinyobj::index_t idx = shapes[s].mesh.indices[3 * f + v];
-				vertex_ids.push_back(idx.vertex_index);
-				normal_ids.push_back(idx.normal_index);
-				uv_ids.push_back(idx.texcoord_index);
+				vertex_ids.push_back(idx.vertex_index + 1);
+				normal_ids.push_back(idx.normal_index + 1);
+				uv_ids.push_back(idx.texcoord_index + 1);
 			}
 		}
 	}

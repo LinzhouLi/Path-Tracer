@@ -95,22 +95,28 @@ int main(int argc, char **argv) {
     threadCount = tbb::task_scheduler_init::automatic;
     tbb::task_scheduler_init init(threadCount);
 
-    // create scene
-    Scene scene; // spp
-    scene.loadOBJ("D:/code/Rendering/Path-Tracer/scenes/bathroom/bathroom.obj");
-    scene.loadXML("D:/code/Rendering/Path-Tracer/scenes/bathroom/bathroom.xml");
-    scene.preprocess();
+    try {
+        // create scene
+        Scene scene;
+        scene.loadOBJ("D:/code/Rendering/Path-Tracer/scenes/cornell-box-2/cornell-box-2.obj");
+        scene.loadXML("D:/code/Rendering/Path-Tracer/scenes/cornell-box-2/cornell-box-2.xml");
+        scene.preprocess();
 
-    // create sampler
-    uint32_t spp = 64;
-    SobolSampler sampler(spp, scene.getCamera()->getScreenSize());
+        // create sampler
+        uint32_t spp = 64;
+        SobolSampler sampler(spp, scene.getCamera()->getScreenSize());
 
-    // create Integrator
-    BDPTIntegrator integrator;
-    //PathIntegrator integrator;
-    integrator.preprocess(&scene);
+        // create Integrator
+        //BDPTIntegrator integrator;
+        PathIntegrator integrator;
+        integrator.preprocess(&scene);
 
-    render(&scene, &sampler, &integrator);
+        render(&scene, &sampler, &integrator);
+    }
+    catch (const PathTracerException& e) {
+		cerr << "Error: " << e.what() << endl;
+		return 1;
+	}
 
     return 0;
 }

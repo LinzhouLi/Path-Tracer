@@ -29,24 +29,26 @@ public:
     size_t getTriangleCount() { return m_vertex_ids.size() / 3; }
 
     void getVertex(uint32_t face_id, Vector3f& v0, Vector3f& v1, Vector3f& v2) {
-        v0 = m_vertices[m_vertex_ids[3 * face_id + 0]];
-        v1 = m_vertices[m_vertex_ids[3 * face_id + 1]];
-        v2 = m_vertices[m_vertex_ids[3 * face_id + 2]];
+        v0 = m_vertices[m_vertex_ids[3 * face_id + 0] - 1];
+        v1 = m_vertices[m_vertex_ids[3 * face_id + 1] - 1];
+        v2 = m_vertices[m_vertex_ids[3 * face_id + 2] - 1];
     }
 
     bool getNormal(uint32_t face_id, Vector3f& n0, Vector3f& n1, Vector3f& n2) {
-        if (m_normal_ids[3 * face_id] < 0) return false;
-        n0 = m_normals[m_normal_ids[3 * face_id + 0]];
-        n1 = m_normals[m_normal_ids[3 * face_id + 1]];
-        n2 = m_normals[m_normal_ids[3 * face_id + 2]];
+        if (m_normals.empty()) return false;
+        if (m_normal_ids[3 * face_id] == 0) return false;
+        n0 = m_normals[m_normal_ids[3 * face_id + 0] - 1];
+        n1 = m_normals[m_normal_ids[3 * face_id + 1] - 1];
+        n2 = m_normals[m_normal_ids[3 * face_id + 2] - 1];
         return true;
     }
 
     bool getUV(uint32_t face_id, Vector2f& uv0, Vector2f& uv1, Vector2f& uv2) {
-        if (m_uv_ids[3 * face_id] < 0) return false;
-        uv0 = m_uvs[m_uv_ids[3 * face_id + 0]];
-        uv1 = m_uvs[m_uv_ids[3 * face_id + 1]];
-        uv2 = m_uvs[m_uv_ids[3 * face_id + 2]];
+        if (m_uvs.empty()) return false;
+        if (m_uv_ids[3 * face_id] == 0) return false;
+        uv0 = m_uvs[m_uv_ids[3 * face_id + 0] - 1];
+        uv1 = m_uvs[m_uv_ids[3 * face_id + 1] - 1];
+        uv2 = m_uvs[m_uv_ids[3 * face_id + 2] - 1];
         return true;
     }
 

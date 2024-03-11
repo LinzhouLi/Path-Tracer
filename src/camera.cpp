@@ -106,6 +106,7 @@ Vector3f Camera::Le(const Vector3f& w) { // 'W_e' in the equation
 	float cosTheta = camForward.dot(w);
 	if (cosTheta <= 0.0f) return Vector3f(0.0f);
 
+	// return importance for point on image plane
 	float cosTheta2 = cosTheta * cosTheta;
 	return Vector3f(1.0f / cosTheta2 * cosTheta2);
 }
@@ -126,7 +127,10 @@ CameraLiSample Camera::sampleLi(const Intersection& surfIts, const Vector2f& u) 
 	float dist = wi.norm();
 	wi /= dist;
 
+	// compute PDF of importance arriving at surfIts
 	float pdfDir = dist * dist / absDot(camForward, wi);
+
+	// compute importance
 	Vector3f L = Le(-wi);
 	return CameraLiSample { L, wi, m_eye, pdfDir };
 }
