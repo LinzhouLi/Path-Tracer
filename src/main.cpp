@@ -72,7 +72,7 @@ static void render(Scene* scene, Sampler* sampler, Integrator* integrator) {
 
                 renderBlock(scene, sampler_t.get(), integrator, block);
 
-                result.put(block);
+                //result.put(block);
             }
             };
 
@@ -107,8 +107,8 @@ int main(int argc, char **argv) {
         SobolSampler sampler(spp, scene.getCamera()->getScreenSize());
 
         // create Integrator
-        //BDPTIntegrator integrator;
-        PathIntegrator integrator;
+        BDPTIntegrator integrator;
+        //PathIntegrator integrator;
         integrator.preprocess(&scene);
 
         render(&scene, &sampler, &integrator);

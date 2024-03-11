@@ -108,7 +108,7 @@ Vector3f Camera::Le(const Vector3f& w) { // 'W_e' in the equation
 
 	// return importance for point on image plane
 	float cosTheta2 = cosTheta * cosTheta;
-	return Vector3f(1.0f / cosTheta2 * cosTheta2);
+	return Vector3f(1.0f / (cosTheta2 * cosTheta2));
 }
 
 float Camera::pdfLe(const Ray& ray) {
