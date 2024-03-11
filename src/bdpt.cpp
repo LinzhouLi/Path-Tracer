@@ -310,11 +310,11 @@ Vector3f BDPTIntegrator::Li(Scene* scene, Sampler* sampler, const Vector2f& pixe
 			if (s == 0) { // use full camera path, has energy only when the last vertex emits light
 				L += connectCameraPathWithLight(scene, lightVertices, cameraVertices, t);
 			}
-			else if (t == 1 && s==2) { // resample a point on a camera and connect it to the light subpath.
+			else if (t == 1) { // resample a point on a camera and connect it to the light subpath.
 				auto ret = connectPathSampleCamera(scene, sampler, lightVertices, cameraVertices, s);
 				if (ret.has_value()) {
 					auto& [Lpath, pixel] = ret.value();
-					m_splatBlock->addSplat(pixel, Lpath);
+					//m_splatBlock->addSplat(pixel, Lpath);
 				}
 			}
 			else if (s == 1) {// resample a point on a light and connect it to the camera subpath.
