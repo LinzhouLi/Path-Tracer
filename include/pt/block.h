@@ -77,10 +77,13 @@ public:
     void clear() { setConstant(Color4f()); }
 
     /// Record a sample with the given position and radiance value
-    void put(const Vector2f & globalPos, const Vector3f &value, float weight = 1.0);
+    void put(const Vector2f & globalPos, const Color3f &value, float weight);
 
-    /// Record a value at the given position (used by bdpt)
-    void putValue(const Vector2f & globalPos, const Vector3f &value);
+    /// Record a splat at the given position (used by bdpt)
+    void addSplat(const Vector2f & globalPos, const Vector3f &value);
+
+    /// Record a sample at the given position (used by bdpt)
+    void addSample(const Vector2f& globalPos, const Vector3f& value);
 
     /**
      * \brief Merge another image block into this one

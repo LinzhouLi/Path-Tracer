@@ -35,7 +35,7 @@ static void renderBlock(Scene* scene, Sampler* sampler, Integrator* integrator, 
 
                 Vector3f value = integrator->Li(scene, sampler, pixelSample);
 
-                block.put(pixelSample, value);
+                block.addSample(pixelSample, value);
             }
         }
     }
@@ -43,14 +43,21 @@ static void renderBlock(Scene* scene, Sampler* sampler, Integrator* integrator, 
 
 static void render(Scene* scene, Sampler* sampler, Integrator* integrator) {
     Vector2i screenSize = scene->getCamera()->getScreenSize();
-    ImageBlock result(screenSize, scene->getFilter());
-    integrator->setResultBlock(&result);
-    result.clear();
+    ImageBlock sampleResult(screenSize, scene->getFilter());
+    ImageBlock splatResult(screenSize, scene->getFilter());
 
+    sampleResult.clear();
+    splatResult.clear();
+
+    integrator->setSplatBlock(&splatResult);
+    
     GUI *gui = nullptr;
     if (useGui) {
         nanogui::init();
-        gui = new GUI(result);
+        gui = new GUI(sampleResult, splatResult);
+        gui->setSplatScale(1.0f / sampler->getSPP());
+
+        gui->set_size(gui->size() / gui->pixel_ratio()); // fix pixel ratio problem
     }
 
     std::thread render_thread([&] {
@@ -72,7 +79,7 @@ static void render(Scene* scene, Sampler* sampler, Integrator* integrator) {
 
                 renderBlock(scene, sampler_t.get(), integrator, block);
 
-                //result.put(block);
+                sampleResult.put(block);
             }
             };
 
@@ -98,8 +105,8 @@ int main(int argc, char **argv) {
     try {
         // create scene
         Scene scene;
-        scene.loadOBJ("D:/code/Rendering/Path-Tracer/scenes/cornell-box-2/cornell-box-2.obj");
-        scene.loadXML("D:/code/Rendering/Path-Tracer/scenes/cornell-box-2/cornell-box-2.xml");
+        scene.loadOBJ("D:/code/Rendering/Path-Tracer/scenes/veach-mis/veach-mis.obj");
+        scene.loadXML("D:/code/Rendering/Path-Tracer/scenes/veach-mis/veach-mis.xml");
         scene.preprocess();
 
         // create sampler
@@ -109,7 +116,6 @@ int main(int argc, char **argv) {
         // create Integrator
         BDPTIntegrator integrator;
         //PathIntegrator integrator;
-        integrator.preprocess(&scene);
 
         render(&scene, &sampler, &integrator);
     }

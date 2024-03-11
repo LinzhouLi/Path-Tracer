@@ -49,10 +49,6 @@ class BDPTIntegrator : public Integrator {
 public:
 	static constexpr int MaxDepth = 5;
 
-	void preprocess(Scene* scene) {
-		cout << "BDPT PathIntegrator!" << endl;
-	}
-
 	Vector3f Li(Scene* scene, Sampler* sampler, const Vector2f& pixelSample);
 
 private:

@@ -298,8 +298,8 @@ Vector3f BDPTIntegrator::Li(Scene* scene, Sampler* sampler, const Vector2f& pixe
 
 	// generate subpaths
 	Vertex cameraVertices[MaxDepth + 2], lightVertices[MaxDepth + 1];
-	int numCameraVs = generateCameraSubpath(scene, sampler, cameraVertices, pixelSample, 0 + 2);
-	int numLightVs = generateLightSubpath(scene, sampler, lightVertices, 1 + 1);
+	int numCameraVs = generateCameraSubpath(scene, sampler, cameraVertices, pixelSample, MaxDepth + 2);
+	int numLightVs = generateLightSubpath(scene, sampler, lightVertices, MaxDepth + 1);
 
 	// connect subpaths and compute contribution
 	for (int t = 1; t <= numCameraVs; t++) {
@@ -314,7 +314,7 @@ Vector3f BDPTIntegrator::Li(Scene* scene, Sampler* sampler, const Vector2f& pixe
 				auto ret = connectPathSampleCamera(scene, sampler, lightVertices, cameraVertices, s);
 				if (ret.has_value()) {
 					auto& [Lpath, pixel] = ret.value();
-					m_block->put(pixel, Lpath); // pbrt: add splat
+					m_splatBlock->addSplat(pixel, Lpath);
 				}
 			}
 			else if (s == 1) {// resample a point on a light and connect it to the camera subpath.

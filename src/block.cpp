@@ -57,8 +57,7 @@ void ImageBlock::fromBitmap(const Bitmap &bitmap) {
             coeffRef(y, x) << bitmap.coeff(y, x), 1;
 }
 
-void ImageBlock::put(const Vector2f &globalPos, const Vector3f &value_, float weight) {
-    Color3f value(value_.x(), value_.y(), value_.z());
+void ImageBlock::put(const Vector2f &globalPos, const Color3f &value, float weight) {
     if (!value.isValid()) {
         /* If this happens, go fix your code instead of removing this warning ;) */
         cerr << "Integrator: computed an invalid radiance value: " << value.toString() << endl;
@@ -71,14 +70,14 @@ void ImageBlock::put(const Vector2f &globalPos, const Vector3f &value_, float we
         localPos.y() < 0.0f || localPos.y() >= m_size.y()
     ) return;
 
-    /* Compute the rectangle of pixels that will need to be updated */
     localPos += Vector2f(m_borderSize);
+    //coeffRef(localPos.y(), localPos.x()) += Color4f(value, weight);
+
+    /* Compute the rectangle of pixels that will need to be updated */
     int boundMinX = std::max(int(std::ceil(localPos.x() - m_filterRadius)), 0);
     int boundMinY = std::max(int(std::ceil(localPos.y() - m_filterRadius)), 0);
     int boundMaxX = std::min(int(std::floor(localPos.x() + m_filterRadius)), int(cols() - 1));
     int boundMaxY = std::min(int(std::floor(localPos.y() + m_filterRadius)), int(rows() - 1));
-
-    tbb::mutex::scoped_lock lock(m_mutex);
 
     /* Lookup values from the pre-rasterized filter */
     for (int x = boundMinX, idx = 0; x <= boundMaxX; ++x, ++idx)
@@ -91,17 +90,13 @@ void ImageBlock::put(const Vector2f &globalPos, const Vector3f &value_, float we
             coeffRef(y, x) += Color4f(value, weight) * m_weightsX[xr] * m_weightsY[yr];
 }
 
-void ImageBlock::putValue(const Vector2f& globalPos, const Vector3f& value_) {
-    Color3f value(value_.x(), value_.y(), value_.z());
+void ImageBlock::addSample(const Vector2f& globalPos, const Vector3f& value) {
+    put(globalPos, Color3f(value.x(), value.y(), value.z()), 1.0f);
+}
 
-    Vector2i localPos = globalPos.cast<int>() - m_offset;
-    if (
-        localPos.x() < 0.0f || localPos.x() >= m_size.x() ||
-        localPos.y() < 0.0f || localPos.y() >= m_size.y()
-    ) return;
-
-    localPos += Vector2i(m_borderSize);
-    coeffRef(localPos.y(), localPos.x()) += Color4f(value, 0.0f);
+void ImageBlock::addSplat(const Vector2f& globalPos, const Vector3f& value) {
+    tbb::mutex::scoped_lock lock(m_mutex);
+    put(globalPos, Color3f(value.x(), value.y(), value.z()), 0.0f);
 }
     
 void ImageBlock::put(ImageBlock &b) {
