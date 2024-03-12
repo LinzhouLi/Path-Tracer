@@ -85,7 +85,7 @@ float Vertex::convertPdfDensity(float pdf, const Vertex& nextVertex) const {
 }
 
 Vector3f Vertex::Le(const Vertex& v) const {
-	if (its.getShape() && its.getShape()->getLight()) {
+	if (its.getLight()) {
 		Vector3f w = v.its.p - this->its.p;
 		float dist = w.norm();
 		if (dist == 0.0f) return Vector3f(0.0f);
@@ -147,10 +147,11 @@ float Vertex::pdf(const Vertex* prev, const Vertex* next) const {
 		if (dist == 0.0f) return 0.0f;
 		wp /= dist;
 	}
+	else assert(type == VertexType::Camera);
 
 	float pdf = 0.0f;
 	if (type == VertexType::Camera) pdf = this->camera->pdfLe(Ray(its.p, wn, 0.0f));
-	else if (type == VertexType::Surface) pdf = its.pdfBRDF(wn, wp);
+	else if (type == VertexType::Surface) pdf = its.pdfBRDF(wp, wn);
 	return convertPdfDensity(pdf, *next);
 }
 
@@ -292,7 +293,6 @@ float BDPTIntegrator::computeMISWeight(
 	return 1 / (1 + sumRi);
 }
 
-
 Vector3f BDPTIntegrator::Li(Scene* scene, Sampler* sampler, const Vector2f& pixelSample) {
 	Vector3f L(0.0);
 
@@ -300,13 +300,13 @@ Vector3f BDPTIntegrator::Li(Scene* scene, Sampler* sampler, const Vector2f& pixe
 	Vertex cameraVertices[MaxDepth + 2], lightVertices[MaxDepth + 1];
 	int numCameraVs = generateCameraSubpath(scene, sampler, cameraVertices, pixelSample, MaxDepth + 2);
 	int numLightVs = generateLightSubpath(scene, sampler, lightVertices, MaxDepth + 1);
-
+	
 	// connect subpaths and compute contribution
 	for (int t = 1; t <= numCameraVs; t++) {
 		for (int s = 0; s <= numLightVs; s++) {
 			int depth = t + s - 2;
 			if ((s == 1 && t == 1) || depth < 0 || depth > MaxDepth) continue;
-
+			
 			if (s == 0) { // use full camera path, has energy only when the last vertex emits light
 				L += connectCameraPathWithLight(scene, lightVertices, cameraVertices, t);
 			}
@@ -314,7 +314,7 @@ Vector3f BDPTIntegrator::Li(Scene* scene, Sampler* sampler, const Vector2f& pixe
 				auto ret = connectPathSampleCamera(scene, sampler, lightVertices, cameraVertices, s);
 				if (ret.has_value()) {
 					auto& [Lpath, pixel] = ret.value();
-					//m_splatBlock->addSplat(pixel, Lpath);
+					m_splatBlock->addSplat(pixel, Lpath);
 				}
 			}
 			else if (s == 1) {// resample a point on a light and connect it to the camera subpath.

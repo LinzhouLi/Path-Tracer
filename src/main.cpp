@@ -105,8 +105,8 @@ int main(int argc, char **argv) {
     try {
         // create scene
         Scene scene;
-        scene.loadOBJ("D:/code/Rendering/Path-Tracer/scenes/veach-mis/veach-mis.obj");
-        scene.loadXML("D:/code/Rendering/Path-Tracer/scenes/veach-mis/veach-mis.xml");
+        scene.loadOBJ("D:/code/Rendering/Path-Tracer/scenes/bathroom/bathroom.obj");
+        scene.loadXML("D:/code/Rendering/Path-Tracer/scenes/bathroom/bathroom.xml");
         scene.preprocess();
 
         // create sampler
@@ -114,8 +114,8 @@ int main(int argc, char **argv) {
         SobolSampler sampler(spp, scene.getCamera()->getScreenSize());
 
         // create Integrator
-        BDPTIntegrator integrator;
-        //PathIntegrator integrator;
+        //BDPTIntegrator integrator;
+        PathIntegrator integrator;
 
         render(&scene, &sampler, &integrator);
     }

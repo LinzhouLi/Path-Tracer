@@ -86,7 +86,7 @@ GUI::GUI(const ImageBlock& sampleBlock, const ImageBlock& splatBlock) :
         void main() {
             vec4 sampleColor = texture(sampleTexture, uv);
             vec4 splatColor = texture(splatTexture, uv);
-            if (splatColor.w != 0.0) sampleColor /= sampleColor.w;
+            if (sampleColor.w != 0.0) sampleColor /= sampleColor.w;
             splatColor *= splatScale;
             vec4 color = (sampleColor + splatColor) * tonemapScale;
             out_color = vec4(toSRGB(color.r), toSRGB(color.g), toSRGB(color.b), 1.0f);
