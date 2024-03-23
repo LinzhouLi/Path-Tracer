@@ -56,8 +56,6 @@ static void render(Scene* scene, Sampler* sampler, Integrator* integrator) {
         nanogui::init();
         gui = new GUI(sampleResult, splatResult);
         gui->setSplatScale(1.0f / sampler->getSPP());
-
-        gui->set_size(gui->size() / gui->pixel_ratio()); // fix pixel ratio problem
     }
 
     std::thread render_thread([&] {
@@ -105,8 +103,8 @@ int main(int argc, char **argv) {
     try {
         // create scene
         Scene scene;
-        scene.loadOBJ("D:/code/Rendering/Path-Tracer/scenes/bathroom/bathroom.obj");
-        scene.loadXML("D:/code/Rendering/Path-Tracer/scenes/bathroom/bathroom.xml");
+        scene.loadOBJ("D:/code/Rendering/Path-Tracer/scenes/veach-mis/veach-mis.obj");
+        scene.loadXML("D:/code/Rendering/Path-Tracer/scenes/veach-mis/veach-mis.xml");
         scene.preprocess();
 
         // create sampler

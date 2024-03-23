@@ -17,15 +17,14 @@
 namespace pt {
 
 GUI::GUI(const ImageBlock& sampleBlock, const ImageBlock& splatBlock) :
-    nanogui::Screen(
-        nanogui::Vector2i(sampleBlock.getSize().x(), sampleBlock.getSize().y() + 36), 
-        "PathTracer", false
-    ),
+    nanogui::Screen(nanogui::Vector2i(800, 600)),
     m_sampleBlock(sampleBlock),
-    m_splatBlock(splatBlock) {
+    m_splatBlock(splatBlock) 
+{
     using namespace nanogui;
 
     inc_ref();
+    const Vector2i& size = sampleBlock.getSize();
 
     /* Add some UI elements to adjust the exposure value */
     Widget* panel = new Widget(this);
@@ -36,14 +35,10 @@ GUI::GUI(const ImageBlock& sampleBlock, const ImageBlock& splatBlock) :
     slider->set_fixed_width(150);
     slider->set_callback([&](float value) { m_tonemapScale = std::pow(2.f, (value - 0.5f) * 20); });
     slider->callback();
-
+    panel->set_size(nanogui::Vector2i(size.x(), size.y()));
     perform_layout();
-
-    panel->set_size(nanogui::Vector2i(sampleBlock.getSize().x(), sampleBlock.getSize().y()));
-    panel->set_position(nanogui::Vector2i((sampleBlock.getSize().x() - panel->size().x()) / 2, sampleBlock.getSize().y()));
     
     /* Simple gamma tonemapper as a GLSL shader */
-
     m_renderPass = new RenderPass({ this });
     m_renderPass->set_clear_color(0, Color(0.3f, 0.3f, 0.3f, 1.f));
     
@@ -108,15 +103,15 @@ GUI::GUI(const ImageBlock& sampleBlock, const ImageBlock& splatBlock) :
     m_shader->set_buffer("indices", VariableType::UInt32, {3*2}, indices);
     m_shader->set_buffer("position", VariableType::Float32, {4, 2}, positions);
     
-    const Vector2i &size = sampleBlock.getSize();
+    int borderSize = sampleBlock.getBorderSize();
     m_shader->set_uniform("size", nanogui::Vector2i(size.x(), size.y()));
-    m_shader->set_uniform("borderSize", sampleBlock.getBorderSize());
+    m_shader->set_uniform("borderSize", borderSize);
     
     // Allocate texture memory for the rendered image
     m_sampleTexture = new Texture(
         Texture::PixelFormat::RGBA,
         Texture::ComponentFormat::Float32,
-        nanogui::Vector2i(size.x() + 2 * sampleBlock.getBorderSize(), size.y() + 2 * sampleBlock.getBorderSize()),
+        nanogui::Vector2i(size.x() + 2 * borderSize, size.y() + 2 * borderSize),
         Texture::InterpolationMode::Nearest,
         Texture::InterpolationMode::Nearest
     );
@@ -124,12 +119,16 @@ GUI::GUI(const ImageBlock& sampleBlock, const ImageBlock& splatBlock) :
     m_splatTexture = new Texture(
         Texture::PixelFormat::RGBA,
         Texture::ComponentFormat::Float32,
-        nanogui::Vector2i(size.x() + 2 * splatBlock.getBorderSize(), size.y() + 2 * splatBlock.getBorderSize()),
+        nanogui::Vector2i(size.x() + 2 * borderSize, size.y() + 2 * borderSize),
         Texture::InterpolationMode::Nearest,
         Texture::InterpolationMode::Nearest
     );
+
     draw_all();
     set_visible(true);
+    set_size(nanogui::Vector2i(size.x(), (size.y() + 36)));
+    set_caption("PathTracer");
+    panel->set_position(nanogui::Vector2i((size.x() - panel->size().x()) / 2, size.y()));
 }
 
 
@@ -156,7 +155,7 @@ void GUI::draw_contents() {
     m_shader->begin();
     m_shader->draw_array(nanogui::Shader::PrimitiveType::Triangle, 0, 6, true);
     m_shader->end();
-    m_renderPass->set_viewport(nanogui::Vector2i(0, 0), framebuffer_size());
+    // m_renderPass->set_viewport(nanogui::Vector2i(0, 0), framebuffer_size());
     m_renderPass->end();
 
     m_sampleBlock.unlock();
