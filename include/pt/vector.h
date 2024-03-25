@@ -77,7 +77,7 @@ public:
             if (i+1 < Dimension)
                 result += ", ";
         }
-        return "[" + result + "]";
+        return "[ " + result + " ]";
     }
 };
 

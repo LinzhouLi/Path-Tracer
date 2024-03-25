@@ -53,6 +53,8 @@ public:
 	// Set area light
 	void setLight(AreaLight* light) { m_light = light; }
 
+	std::string toString() const;
+
 private:
 	uint32_t m_triangle_id;
 	TriangleMesh* m_mesh = nullptr;

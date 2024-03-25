@@ -26,7 +26,10 @@ public:
      * The contents will initially be undefined, so make sure
      * to call \ref clear() if necessary
      */
-    Bitmap(const Vector2i &size = Vector2i(0, 0)) : Base(size.y(), size.x()) { }
+    Bitmap(const std::string& name = "") : m_name(name) { }
+
+    Bitmap(const Vector2i &size = Vector2i(0, 0), const std::string& name = "")
+        : Base(size.y(), size.x()), m_name(name) { }
 
     /// Load an OpenEXR file with the specified filename
     void loadEXR(const std::string& filename);
@@ -41,6 +44,19 @@ public:
     void savePNG(const std::string& filename);
 
     Color3f sample(const Vector2f& uv) const;
+
+    std::string toString() const {
+        return tfm::format(
+            "Bitmap[\n"
+            "  name = %s,\n"
+            "  size = [ %i, %i ]\n"
+            "]",
+            m_name, cols(), rows()
+        );
+    }
+
+private:
+    std::string m_name;
 };
 
 }

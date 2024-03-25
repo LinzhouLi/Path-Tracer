@@ -70,6 +70,8 @@ public:
     // Get light selector
     UniformLightSelector* getLightSelector() const { return m_light_selector; }
 
+    std::string toString() const;
+
 private:
     void createPrimitives();
     void createAreaLights();

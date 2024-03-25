@@ -40,10 +40,10 @@ public:
     std::string toString() const {
         return tfm::format(
                 "Ray[\n"
-                "  o = %s,\n"
-                "  d = %s,\n"
-                "  mint = %f,\n"
-                "  maxt = %f\n"
+                "  org = %s,\n"
+                "  dir = %s,\n"
+                "  min_dis = %f,\n"
+                "  max_dis = %f\n"
                 "]", 
             org.toString(), dir.toString(), min_dis, max_dis
         );

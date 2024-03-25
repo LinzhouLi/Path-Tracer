@@ -52,6 +52,8 @@ public:
 
 	bool rayIntersect(const Ray& ray);
 
+	std::string toString() const;
+
 private:
 	std::vector<Node> m_nodes;
 	std::vector<size_t> m_prim_ids;

@@ -112,6 +112,19 @@ TriangleSample Triangle::sample(const Vector2f& u) const {
 	return TriangleSample { p, n, pdf };
 }
 
+std::string Triangle::toString() const {
+	return tfm::format(
+		"Triangle[\n"
+		"  triangle_id = %i,\n"
+		"  area = %f,\n"
+		"  aabb = %s\n"
+		"]",
+		m_triangle_id,
+		surfaceArea(),
+		getAABB().toString()
+	);
+}
+
 
 Intersection& Intersection::operator= (const Intersection& cls) {
 	p = cls.p;

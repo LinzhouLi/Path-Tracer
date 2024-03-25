@@ -130,6 +130,17 @@ public:
 	// Ray-AABB intersection
 	bool intersect(const Ray& ray) const;
 
+	std::string toString() const {
+		return tfm::format(
+			"AABB[\n"
+			"  min = %s,\n"
+			"  max = %s,\n"
+			"]",
+			m_min.toString(),
+			m_max.toString()
+		);
+	}
+
 private:
 	Vector3f m_min;
 	Vector3f m_max;

@@ -19,19 +19,6 @@
 
 namespace pt {
 
-std::string toLower(const std::string& value) {
-    std::string result;
-    result.resize(value.size());
-    std::transform(value.begin(), value.end(), result.begin(), ::tolower);
-    return result;
-}
-
-bool endsWith(const std::string& value, const std::string& ending) {
-    if (ending.size() > value.size())
-        return false;
-    return std::equal(ending.rbegin(), ending.rend(), value.rbegin());
-}
-
 void Bitmap::loadEXR(const std::string &filename) {
     Imf::InputFile file(filename.c_str());
     const Imf::Header &header = file.header();
@@ -40,8 +27,8 @@ void Bitmap::loadEXR(const std::string &filename) {
     Imath::Box2i dw = file.header().dataWindow();
     resize(dw.max.y - dw.min.y + 1, dw.max.x - dw.min.x + 1);
 
-    cout << "Reading a " << cols() << "x" << rows() << " OpenEXR file from \""
-         << filename << "\"" << endl;
+    //cout << "Reading a " << cols() << "x" << rows() << " OpenEXR file from \""
+    //     << filename << "\"" << endl;
 
     const char *ch_r = nullptr, *ch_g = nullptr, *ch_b = nullptr;
     for (Imf::ChannelList::ConstIterator it = channels.begin(); it != channels.end(); ++it) {
@@ -79,7 +66,7 @@ void Bitmap::loadEXR(const std::string &filename) {
 }
 
 void Bitmap::load(const std::string &filename) {
-    cout << "Reading an image from \"" << filename << "\" ..." << endl;
+    //cout << "Reading an image from \"" << filename << "\" ..." << endl;
 
     int width, height, channel;
     uint8_t* rgb8 = stbi_load(filename.c_str(), &width, &height, &channel, 0);

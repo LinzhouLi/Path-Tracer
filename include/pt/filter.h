@@ -10,11 +10,13 @@ class Filter {
 public:
     Filter(float radius): m_radius(radius) { }
 
-    /// Return the filter radius in fractional pixels
+    // Return the filter radius in fractional pixels
     float getRadius() const { return m_radius; }
 
-    /// Evaluate the filter function
+    // Evaluate the filter function
     virtual float eval(float x) const = 0;
+
+    virtual std::string toString() const = 0;
 
 protected:
     float m_radius;
@@ -30,6 +32,17 @@ public:
         return std::max(0.0f,
             std::exp(alpha * x * x) -
             std::exp(alpha * m_radius * m_radius));
+    }
+
+    std::string toString() const {
+        return tfm::format(
+            "GaussianFilter[\n"
+            "  radius = %f,\n"
+            "  stddev = %f\n"
+            "]",
+            m_radius,
+            m_stddev
+        );
     }
 
 protected:

@@ -99,7 +99,7 @@ public:
 
     /// Return a human-readable string summary
     std::string toString() const {
-        return tfm::format("[%f, %f, %f]", coeff(0), coeff(1), coeff(2));
+        return tfm::format("[ %f, %f, %f ]", coeff(0), coeff(1), coeff(2));
     }
 };
 
@@ -141,7 +141,7 @@ public:
 
     /// Return a human-readable string summary
     std::string toString() const {
-        return tfm::format("[%f, %f, %f, %f]", coeff(0), coeff(1), coeff(2), coeff(3));
+        return tfm::format("[ %f, %f, %f, %f ]", coeff(0), coeff(1), coeff(2), coeff(3));
     }
 };
 

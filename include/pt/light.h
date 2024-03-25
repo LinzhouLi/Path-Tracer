@@ -41,6 +41,8 @@ public:
 
 	float pdfDir(const Vector3f& w, const Vector3f& n) const { return w.dot(n) * INV_PI; } // TODO: refactor
 
+	std::string toString() const;
+
 private:
 	Triangle* m_shape;
 	Vector3f m_lemit;
@@ -59,6 +61,12 @@ public:
 
 	float pdf(const AreaLight* light) const {
 		return 1.0f / m_lights->size();
+	}
+
+	std::string UniformLightSelector::toString() const {
+		return tfm::format(
+			"UniformLightSelector[]"
+		);
 	}
 
 private:

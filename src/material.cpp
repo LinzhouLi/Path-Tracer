@@ -98,4 +98,21 @@ float Material::pdf(const Vector3f& wo, const Vector3f& wi, const Intersection& 
 	return mix(pdf_diff, pdf_spec, specProb);
 }
 
+std::string Material::toString() const {
+	return tfm::format(
+		"Material[\n"
+		"  name = %s,\n"
+		"  diffuse = %s,\n"
+		"  specular = %s,\n"
+		"  shininess = %f,\n"
+		"  texture = %s\n"
+		"]",
+		m_name,
+		m_diffuse.toString(),
+		m_specular.toString(),
+		m_shininess,
+		m_diffuse_texture ? indent(m_diffuse_texture->toString()) : "null"
+	);
+}
+
 }

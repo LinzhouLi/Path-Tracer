@@ -13,7 +13,7 @@
 namespace pt {
 
 void Accel::build() {
-    cout << "Brute force intersection search. No accelration!" << endl;
+    //cout << "Brute force intersection search. No accelration!" << endl;
 }
 
 bool Accel::rayIntersect(const Ray& ray, Intersection& its) {
@@ -47,6 +47,11 @@ bool Accel::rayIntersect(const Ray& ray) {
         }
     }
     return false;
+}
+
+
+std::string Accel::toString() const {
+    return tfm::format("NoAccelration[]");
 }
 
 

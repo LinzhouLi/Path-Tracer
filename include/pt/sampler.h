@@ -1,6 +1,6 @@
 #pragma once
 
-#include <pt/vector.h>
+#include <pt/common.h>
 #include <pcg32.h>
 
 namespace sobol {
@@ -40,6 +40,8 @@ public:
 
     virtual inline Vector2f samplePixel2D() = 0;
 
+    virtual std::string toString() const = 0;
+
 protected:
     uint32_t m_spp;
 };
@@ -75,6 +77,15 @@ public:
 
     inline Vector2f samplePixel2D() { return sample2D(); }
 
+    std::string toString() const {
+        return tfm::format(
+            "IndependentSampler[\n"
+            "  spp = %i\n" 
+            "]",
+            m_spp
+        );
+    }
+
 private:
     pcg32 m_random;
 };
@@ -95,6 +106,17 @@ public:
     inline Vector2f sample2D();
 
     inline Vector2f samplePixel2D();
+
+    std::string toString() const {
+        return tfm::format(
+            "SobolSampler[\n"
+            "  spp = %i,\n"
+            "  NSobolDimensions = %i,\n"
+            "  SobolMatrixSize = %i\n"
+            "]",
+            m_spp, sobol::NSobolDimensions, sobol::SobolMatrixSize
+        );
+    }
 
 private:
     float sampleDimension(int dimension) const { return sobol::sobolSample(m_sobolIndex, dimension); }

@@ -51,6 +51,10 @@ public:
 
 	Vector3f Li(Scene* scene, Sampler* sampler, const Vector2f& pixelSample);
 
+	std::string toString() const {
+		return tfm::format("BDPTIntegrator[]");
+	}
+
 private:
 	int generateCameraSubpath(Scene* scene, Sampler* sampler, Vertex* path, const Vector2f& pixelSample, int maxDepth) const;
 	int generateLightSubpath(Scene* scene, Sampler* sampler, Vertex* path, int maxDepth) const;

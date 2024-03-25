@@ -11,10 +11,6 @@
 namespace pt {
 
 void BVHTree::build() {
-    cout << "Building BVH tree for accelration ...";
-    cout.flush();
-    Timer timer;
-
     std::vector<AABB> prim_aabbs(m_shapes->size());
     std::vector<Vector3f> prim_centers(m_shapes->size());
 
@@ -25,9 +21,6 @@ void BVHTree::build() {
 
     BVHTreeBuilder builder(this);
     builder.build(prim_aabbs, prim_centers);
-
-    cout << "done. (took " << timer.elapsedString() << ")" << endl;
-    cout << "BVH tree contains " << m_nodes.size() << " nodes!" << endl;
 }
 
 bool BVHTree::rayIntersect(const Ray& ray_, Intersection& its) {
@@ -91,6 +84,17 @@ bool BVHTree::rayIntersect(const Ray& ray) {
 
     return false;
 }
+
+std::string BVHTree::toString() const {
+    return tfm::format(
+        "BVH[\n"
+        "  num_nodes = %i\n"
+        "]",
+        m_nodes.size()
+    );
+}
+
+
 
 void BVHTreeBuilder::build(const std::vector<AABB>& aabbs, const std::vector<Vector3f>& centers) {
     const auto prim_count = aabbs.size();

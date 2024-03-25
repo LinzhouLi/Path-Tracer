@@ -135,4 +135,22 @@ CameraLiSample Camera::sampleLi(const Intersection& surfIts, const Vector2f& u) 
 	return CameraLiSample { L, wi, m_eye, pdfDir };
 }
 
+
+std::string Camera::toString() const {
+	return tfm::format(
+		"PerspectiveCamera[\n"
+		"  width = %i, height = %i,\n"
+		"  near = %f, far = %f,\n"
+		"  eye = %s,\n"
+		"  lookat = %s,\n"
+		"  fov = %f\n"
+		"]",
+		m_width, m_height,
+		Camera::cnear, Camera::cfar,
+		m_eye.toString(),
+		m_lookat.toString(),
+		m_fovy
+	);
+}
+
 };

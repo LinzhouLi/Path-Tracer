@@ -40,6 +40,8 @@ public:
 
 	CameraLiSample sampleLi(const Intersection& surfIts, const Vector2f& u);
 
+	std::string toString() const;
+
 private:
 	uint32_t m_width, m_height;
 	float m_fovy, m_sample_area;

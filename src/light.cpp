@@ -49,4 +49,17 @@ float AreaLight::pdfLi(const Intersection& lightIts, const Ray& ray) const {
 	return m_shape->pdf() * distance * distance / cos_lw;
 }
 
+std::string AreaLight::toString() const {
+	return tfm::format(
+		"AreaLight[\n"
+		"  lemit = %s,\n"
+		"  area = %f,\n"
+		"  shape = %s\n"
+		"]",
+		m_lemit.toString(),
+		m_area,
+		indent(m_shape->toString())
+	);
+}
+
 }

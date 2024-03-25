@@ -17,6 +17,8 @@ public:
 
 	virtual bool rayIntersect(const Ray& ray);
 
+	virtual std::string toString() const;
+
 protected:
 	const std::vector<Triangle*>* m_shapes;
 };

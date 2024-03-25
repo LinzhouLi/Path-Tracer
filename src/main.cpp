@@ -96,6 +96,19 @@ static void render(Scene* scene, Sampler* sampler, Integrator* integrator) {
 
 }
 
+void configuration(Scene* scene, Sampler* sampler, Integrator* integrator) {
+    std::cout << tfm::format(
+        "Configuration[\n"
+        "  integrator = %s,\n"
+        "  sampler = %s,\n"
+        "  scene = %s\n"
+        "]",
+        indent(integrator->toString()),
+        indent(sampler->toString()),
+        indent(scene->toString())
+    ) << endl;
+}
+
 int main(int argc, char **argv) {
     threadCount = tbb::task_scheduler_init::automatic;
     tbb::task_scheduler_init init(threadCount);
@@ -108,13 +121,14 @@ int main(int argc, char **argv) {
         scene.preprocess();
 
         // create sampler
-        uint32_t spp = 64;
+        uint32_t spp = 128;
         SobolSampler sampler(spp, scene.getCamera()->getScreenSize());
 
         // create Integrator
         //BDPTIntegrator integrator;
         PathIntegrator integrator;
 
+        configuration(&scene, &sampler, &integrator);
         render(&scene, &sampler, &integrator);
     }
     catch (const PathTracerException& e) {

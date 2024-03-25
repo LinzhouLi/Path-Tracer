@@ -12,6 +12,7 @@
 #include <pt/light.h>
 #include <pt/filter.h>
 #include <pt/bvh.h>
+#include <pt/timer.h>
 
 #include <pugixml.hpp>
 #define TINYOBJLOADER_IMPLEMENTATION
@@ -28,7 +29,9 @@ float toFloat(const std::string& str) {
 }
 
 void Scene::loadOBJ(const std::string& filename) {
-	cout << "Reading a OBJ file from \"" << filename << "\" ..." << endl;
+	cout << "Reading a OBJ file from \"" << filename << "\" .. ";
+	cout.flush();
+	Timer timer;
 
 	tinyobj::ObjReaderConfig reader_config;
 	reader_config.vertex_color = false; // no vertex color
@@ -86,7 +89,7 @@ void Scene::loadOBJ(const std::string& filename) {
 	);
 	this->m_meshes.push_back(mesh);
 
-	cout << "Load a mesh with " << mesh->getVertexCount() << " vertices and " << mesh->getTriangleCount() << " triangles!" << endl;
+	//cout << "Load a mesh with " << mesh->getVertexCount() << " vertices and " << mesh->getTriangleCount() << " triangles!" << endl;
 
 	// Loop over materials
 	for (size_t m = 0; m < materials.size(); m++) {
@@ -110,7 +113,7 @@ void Scene::loadOBJ(const std::string& filename) {
 			}
 
 			// load bitmap data
-			Bitmap* bitmap = new Bitmap;
+			Bitmap* bitmap = new Bitmap(material.diffuse_texname);
 			bitmap->load(baseDir + material.diffuse_texname);
 			material_->setTexture(bitmap);
 		}
@@ -118,11 +121,14 @@ void Scene::loadOBJ(const std::string& filename) {
 		this->m_materials.push_back(material_);
 	}
 
-	cout << "Load " << this->m_materials.size() << " materials!" << endl;
+	//cout << "Load " << this->m_materials.size() << " materials!" << endl;
+	cout << "done. (took " << timer.elapsedString() << ")" << endl;
 }
 
 void Scene::loadXML(const std::string& filename) {
-	cout << "Reading a XML file from \"" << filename << "\" ..." << endl;
+	cout << "Reading a XML file from \"" << filename << "\" .. ";
+	cout.flush();
+	Timer timer;
 
 	pugi::xml_document doc;
 	pugi::xml_parse_result result = doc.load_file(filename.c_str());
@@ -164,7 +170,7 @@ void Scene::loadXML(const std::string& filename) {
 		eye, lookat, up
 	);
 
-	cout << "Load a camera!" << endl;
+	//cout << "Load a camera!" << endl;
 
 	auto light_nodes = doc.children("light");
 	for (pugi::xml_node light_node : light_nodes) {
@@ -178,7 +184,8 @@ void Scene::loadXML(const std::string& filename) {
 		m_light_infos.push_back(LightInfo(light_name, radiance));
 	}
 
-	cout << "Load " << this->m_light_infos.size() << " area lights!" << endl;
+	//cout << "Load " << this->m_light_infos.size() << " area lights!" << endl;
+	cout << "done. (took " << timer.elapsedString() << ")" << endl;
 }
 
 TriangleMesh* Scene::getMesh(const std::string& mesh_name) {
@@ -230,8 +237,12 @@ void Scene::preprocess() {
 	createAreaLights();
 
 	// build accelration
+	cout << "Building BVH tree for accelration ...";
+	cout.flush();
+	Timer timer;
 	m_accel = new BVHTree(&m_shapes);
 	m_accel->build();
+	cout << "done. (took " << timer.elapsedString() << ")" << endl;
 
 	// create filter
 	m_filter = new GaussianFilter();
@@ -246,7 +257,7 @@ void Scene::createPrimitives() {
 			m_shapes.push_back(new Triangle(j, m_meshes[i], m_materials[mtl_id]));
 		}
 	}
-	cout << "Create " << total_triangles << " primitives!" << endl;
+	//cout << "Create " << total_triangles << " primitives!" << endl;
 }
 
 void Scene::createAreaLights() {
@@ -260,7 +271,46 @@ void Scene::createAreaLights() {
 		}
 	}
 	m_light_selector = new UniformLightSelector(&m_lights); // create light selector
-	cout << "Create " << m_lights.size() << " area lights!" << endl;
+	//cout << "Create " << m_lights.size() << " area lights!" << endl;
+}
+
+std::string Scene::toString() const {
+	std::string meshes_str, materials_str;
+	for (size_t i = 0; i < m_meshes.size(); ++i) {
+		meshes_str += std::string("  ") + indent(m_meshes[i]->toString());
+		if (i + 1 < m_meshes.size())
+			meshes_str += ",";
+		meshes_str += "\n";
+	}
+	for (size_t i = 0; i < m_materials.size(); ++i) {
+		materials_str += std::string("  ") + indent(m_materials[i]->toString());
+		if (i + 1 < m_materials.size())
+			materials_str += ",";
+		materials_str += "\n";
+	}
+
+	return tfm::format(
+		"Scene[\n"
+		"  num_shapes = %i,\n"
+		"  num_lights = %i,\n"
+		"  light_selector = %s,\n"
+		"  camera = %s,\n"
+		"  accel = %s,\n"
+		"  filter = %s,\n"
+		"  meshes = {\n"
+		"  %s  },\n"
+		"  materials = {\n"
+		"  %s  }\n"
+		"]",
+		m_shapes.size(),
+		m_lights.size(),
+		indent(m_light_selector->toString()),
+		indent(m_camera->toString()),
+		indent(m_accel->toString()),
+		indent(m_filter->toString()),
+		indent(meshes_str),
+		indent(materials_str)
+	);
 }
 
 }

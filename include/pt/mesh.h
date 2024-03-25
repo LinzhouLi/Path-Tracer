@@ -54,6 +54,19 @@ public:
 
     uint32_t getMaterialId(uint32_t face_id) { return m_mtl_ids[face_id]; } 
 
+    std::string TriangleMesh::toString() const {
+        return tfm::format(
+            "TriangleMesh[\n"
+            "  name = %s,\n"
+            "  num_vertices = %i,\n"
+            "  num_faces = %i\n"
+            "]",
+            m_name,
+            m_vertices.size(),
+            m_vertex_ids.size() / 3
+        );
+    }
+
 private:
     std::string m_name;
 

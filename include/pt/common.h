@@ -1,10 +1,4 @@
-﻿/*
-	This file is part of Nori, a simple educational ray tracer
-
-	Copyright (c) 2015 by Wenzel Jakob
-*/
-
-#pragma once
+﻿#pragma once
 
 #if defined(_MSC_VER)
 /* Disable some warnings on MSVC++ */
@@ -117,5 +111,13 @@ inline Vector3f samplePhongSpecularLobe(const Vector2f& u, float s) {
 	float phi = 2.0f * M_PI * u.y();
 	return Vector3f(sin_theta * std::cos(phi), sin_theta * std::sin(phi), cos_theta);
 }
+
+
+// for string process
+extern std::string indent(const std::string& string, int amount = 2);
+
+extern std::string toLower(const std::string& value);
+
+extern bool endsWith(const std::string& value, const std::string& ending);
 
 }

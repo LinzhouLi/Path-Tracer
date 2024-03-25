@@ -45,6 +45,8 @@ public:
 
 	float pdf(const Vector3f& wo, const Vector3f& wi, const Intersection& its) const;
 
+	std::string toString() const;
+
 private:
 	std::string m_name;
 
