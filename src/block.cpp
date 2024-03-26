@@ -40,22 +40,22 @@ ImageBlock::~ImageBlock() {
     delete[] m_weightsY;
 }
 
-Bitmap *ImageBlock::toBitmap() const {
-    Bitmap *result = new Bitmap(m_size);
-    for (int y=0; y<m_size.y(); ++y)
-        for (int x=0; x<m_size.x(); ++x)
-            result->coeffRef(y, x) = coeff(y + m_borderSize, x + m_borderSize).divideByFilterWeight();
-    return result;
-}
-
-void ImageBlock::fromBitmap(const Bitmap &bitmap) {
-    if (bitmap.cols() != cols() || bitmap.rows() != rows())
-        throw PathTracerException("Invalid bitmap dimensions!");
-
-    for (int y=0; y<m_size.y(); ++y)
-        for (int x=0; x<m_size.x(); ++x)
-            coeffRef(y, x) << bitmap.coeff(y, x), 1;
-}
+//Bitmap *ImageBlock::toBitmap() const {
+//    Bitmap *result = new Bitmap(m_size);
+//    for (int y=0; y<m_size.y(); ++y)
+//        for (int x=0; x<m_size.x(); ++x)
+//            result->coeffRef(y, x) = coeff(y + m_borderSize, x + m_borderSize).divideByFilterWeight();
+//    return result;
+//}
+//
+//void ImageBlock::fromBitmap(const Bitmap &bitmap) {
+//    if (bitmap.cols() != cols() || bitmap.rows() != rows())
+//        throw PathTracerException("Invalid bitmap dimensions!");
+//
+//    for (int y=0; y<m_size.y(); ++y)
+//        for (int x=0; x<m_size.x(); ++x)
+//            coeffRef(y, x) << bitmap.coeff(y, x), 1;
+//}
 
 void ImageBlock::put(const Vector2f &globalPos, const Color3f &value, float weight) {
     if (!value.isValid()) {

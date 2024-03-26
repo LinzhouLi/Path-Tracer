@@ -20,14 +20,6 @@
 
 namespace pt {
 
-float toFloat(const std::string& str) {
-	char* end_ptr = nullptr;
-	float result = (float)strtof(str.c_str(), &end_ptr);
-	if (*end_ptr != '\0')
-		throw PathTracerException("Could not parse floating point value \"%s\"", str);
-	return result;
-}
-
 void Scene::loadOBJ(const std::string& filename) {
 	cout << "Reading a OBJ file from \"" << filename << "\" .. ";
 	cout.flush();
@@ -106,11 +98,7 @@ void Scene::loadOBJ(const std::string& filename) {
 		// load texture
 		if (!material.diffuse_texname.empty()) { 
 			// find texture file under the same folder with OBJ file.
-			size_t pos = filename.find_last_of("/\\");
-			std::string baseDir = pos == std::string::npos ? "" : filename.substr(0, pos);
-			if (!baseDir.empty()) {
-				if (baseDir[baseDir.length() - 1] != DIR_SEP) baseDir += DIR_SEP;
-			}
+			std::string baseDir = getFolderPath(filename);
 
 			// load bitmap data
 			Bitmap* bitmap = new Bitmap(material.diffuse_texname);

@@ -68,10 +68,10 @@ public:
      * This entails normalizing all pixels and discarding
      * the border region.
      */
-    Bitmap *toBitmap() const;
+    //Bitmap *toBitmap() const;
 
     /// Convert a bitmap into an image block
-    void fromBitmap(const Bitmap &bitmap);
+    //void fromBitmap(const Bitmap &bitmap);
 
     /// Clear all contents
     void clear() { setConstant(Color4f()); }

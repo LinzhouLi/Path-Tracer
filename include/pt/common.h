@@ -118,6 +118,10 @@ extern std::string indent(const std::string& string, int amount = 2);
 
 extern std::string toLower(const std::string& value);
 
+extern float toFloat(const std::string& str);
+
 extern bool endsWith(const std::string& value, const std::string& ending);
+
+extern std::string getFolderPath(const std::string& path);
 
 }
