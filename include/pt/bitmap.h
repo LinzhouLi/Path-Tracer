@@ -41,7 +41,7 @@ public:
     void saveEXR(const std::string& filename);
 
     /// Save the bitmap as a PNG file (with sRGB tonemapping) with the specified filename
-    void savePNG(const std::string& filename);
+    void savePNG(const std::string& filename, bool tonemap = true);
 
     Color3f sample(const Vector2f& uv) const;
 

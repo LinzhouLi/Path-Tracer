@@ -23,7 +23,6 @@ Vector3f GeometryIntegrator::Li(Scene* scene, Sampler* sampler, const Vector2f& 
 	bool hit = scene->rayIntersect(ray, its);
 	if (hit) {
 		Vector3f n = its.n;
-		n = n.cwiseAbs();
 		return n;
 	}
 	else

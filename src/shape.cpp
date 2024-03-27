@@ -184,7 +184,7 @@ float Intersection::pdfBRDF(const Vector3f& wo, const Vector3f& wi) const {
 }
 
 Ray Intersection::genRay(const Vector3f& w) const {
-	Vector3f p_ = p + n * Epsilon;
+	Vector3f p_ = p + ng * Epsilon;
 	return Ray(p_, w, 0);
 }
 

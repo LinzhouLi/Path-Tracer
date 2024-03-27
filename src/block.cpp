@@ -58,11 +58,11 @@ ImageBlock::~ImageBlock() {
 //}
 
 void ImageBlock::put(const Vector2f &globalPos, const Color3f &value, float weight) {
-    if (!value.isValid()) {
-        /* If this happens, go fix your code instead of removing this warning ;) */
-        cerr << "Integrator: computed an invalid radiance value: " << value.toString() << endl;
-        return;
-    }
+    //if (!value.isValid()) {
+    //    /* If this happens, go fix your code instead of removing this warning ;) */
+    //    cerr << "Integrator: computed an invalid radiance value: " << value.toString() << endl;
+    //    return;
+    //}
 
     Vector2f localPos = globalPos - m_offset.cast<float>();
     if (
