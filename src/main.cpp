@@ -101,8 +101,8 @@ int main(int argc, char **argv) {
     threadCount = tbb::task_scheduler_init::automatic;
     tbb::task_scheduler_init init(threadCount);
 
-    std::string obj_path = "D:/code/Rendering/Path-Tracer/scenes/veach-mis/veach-mis.obj";
-    std::string xml_path = "D:/code/Rendering/Path-Tracer/scenes/veach-mis/veach-mis.xml";
+    std::string obj_path = "D:/code/Rendering/Path-Tracer/scenes/cornell-box/cornell-box.obj";
+    std::string xml_path = "D:/code/Rendering/Path-Tracer/scenes/cornell-box/cornell-box.xml";
     std::string folder_path = getFolderPath(obj_path);
 
     uint32_t spp = 128;
@@ -175,10 +175,11 @@ int main(int argc, char **argv) {
                 cout.flush();
                 Timer timer;
 
-                BDPTIntegrator2 integrator;
-                //PathIntegrator integrator;
+                //BDPTIntegrator2 integrator;
+                PathIntegrator integrator;
                 integrator.setSplatBlock(&splatResult);
-                SobolSampler sampler(spp, screenSize);
+                //SobolSampler sampler(spp, screenSize);
+                IndependentSampler sampler(spp);
 
                 sampleResult.clear();
                 splatResult.clear();
