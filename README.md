@@ -102,12 +102,6 @@ $$
       2. 根据采样方向产生下一根光线。
    4. 根据俄罗斯轮盘赌决定是否停止路径追踪
 
-
-
-### 双向路径追踪
-
-
-
 ## 实验结果
 
 ### 不同采样器对比
@@ -130,3 +124,7 @@ spp=128，左：Independent Sampler，右：Sobol Sampler
 
 1. Lafortune, Eric P. and Yves D. Willems. “Using the modified Phong reflectance model for physically based rendering.” (1994).
 2. Shirley, P. *et al.* (2019). Sampling Transformations Zoo. In: Haines, E., Akenine-Möller, T. (eds) Ray Tracing Gems. Apress, Berkeley, CA.
+3. Pharr M, Jakob W, Humphreys G. Physically based rendering: From theory to implementation[M]. MIT Press, 2023.
+4. nori: [wjakob/nori: Nori: an educational ray tracer (github.com)](https://github.com/wjakob/nori)
+5. bvh: [madmann91/bvh: A modern C++ BVH construction and traversal library (github.com)](https://github.com/madmann91/bvh)
+6. SORT: [JiayinCao/SORT: Simple Open-source Ray Tracer (github.com)](https://github.com/JiayinCao/SORT)

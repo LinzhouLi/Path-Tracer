@@ -62,6 +62,7 @@ Vector3f PathIntegrator::Li(Scene* scene, Sampler* sampler, const Vector2f& pixe
 				float light_pdf = light->pdfLi(its, ray);
 				light_pdf *= scene->getLightSelector()->pdf(light); // select pdf
 				float misWeight = powerHeuristic(brdfPdf, light_pdf);
+				//misWeight = 1.0;
 				L += misWeight * accThroughput.cwiseProduct(Le); // brdf mis
 			}
 		}
@@ -69,6 +70,13 @@ Vector3f PathIntegrator::Li(Scene* scene, Sampler* sampler, const Vector2f& pixe
 		// sample light
 		Vector3f Ld = sampleLd(scene, sampler, its, wo);
 		L += accThroughput.cwiseProduct(Ld);
+
+		//BRDFSample bs; // code to sample hemisphere not BRDF
+		//Vector3f w = sampleCosineHemisphere(sampler->sample2D());
+		//bs.wi = its.ts.toWorld(w);
+		//bs.wi.normalize();
+		//bs.pdf = bs.wi.dot(its.n) * INV_PI;
+		//bs.f = its.BRDF(wo, bs.wi);
 
 		// sample BRDF
 		BRDFSample bs = its.sampleBRDF(wo, sampler->sample1D(), sampler->sample2D());
@@ -120,6 +128,7 @@ Vector3f PathIntegrator::sampleLd(Scene* scene, Sampler* sampler, const Intersec
 	float brdf_pdf = surfIts.pdfBRDF(wo, wi);
 	float light_pdf = lightIts.pdfDir * selectPdf;
 	float misWeight = powerHeuristic(light_pdf, brdf_pdf);
+	//misWeight = 1.0;
 
 	return misWeight * f.cwiseProduct(Le) * cosTheta / light_pdf;
 }
