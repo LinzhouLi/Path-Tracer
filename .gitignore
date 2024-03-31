@@ -33,5 +33,6 @@
 
 build
 *.exp
-*.blender
-*.blender1
+*.blend
+*.blend1
+.vscode
