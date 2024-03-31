@@ -33,3 +33,5 @@
 
 build
 *.exp
+*.blender
+*.blender1
