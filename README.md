@@ -39,7 +39,7 @@
 
 在程序运行后，首先渲染normal map和albedo map，然后进行路径追踪计算，我将整个视口分成了16x16像素的patch，每个path之间使用多线程并行渲染，渲染过程如下图。
 
-<img src="scenes、gui.png" alt="gui" width=500 />
+<img src="scenes/gui.png" alt="gui" width=500 />
 
 ### BVH加速结构
 
