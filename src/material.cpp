@@ -20,6 +20,10 @@ Vector3f Material::BRDF(const Vector3f& wo, const Vector3f& wi, const Intersecti
 	//float cosTheta = wi.dot(its.n);
 	//if (cosTheta < 0.0f) return Vector3f(0.0f);
 
+	// hard code
+	if (m_specular.x() > 999 || m_specular.y() > 999 || m_specular.z() > 999)
+		return Vector3f(0.0);
+
 	// compute lambert diffuse
 	Vector3f diffuse = getBaseColor(its.uv) * INV_PI;
 
@@ -37,6 +41,14 @@ BRDFSample Material::sampleBRDF(const Vector3f& wo, float uc, const Vector2f& u,
 	/**
 	* Lafortune, Eric P. and Yves D. Willems. “Using the modified Phong reflectance model for physically based rendering.” (1994).
 	*/
+
+	// hard code
+	if (m_specular.x() > 999 || m_specular.y() > 999 || m_specular.z() > 999)
+		return BRDFSample(
+			reflect(wo, its.n), 0.0,
+			Vector3f(1.0), true
+		);
+
 	Vector3f diffuse = getBaseColor(its.uv); // sample diffuse color
 
 	float sumKd = diffuse.sum();
@@ -78,6 +90,10 @@ BRDFSample Material::sampleBRDF(const Vector3f& wo, float uc, const Vector2f& u,
 }
 
 float Material::pdf(const Vector3f& wo, const Vector3f& wi, const Intersection& its) const {
+	// hard code
+	if (m_specular.x() > 999 || m_specular.y() > 999 || m_specular.z() > 999)
+		return 0.0;
+
 	Vector3f diffuse = getBaseColor(its.uv);
 
 	float sumKd = diffuse.sum();

@@ -6,4 +6,4 @@
 </camera>
 <light mtlname="Sconce_Glass.001" radiance="26, 26, 26"/>
 <light mtlname="Sconce_Glass" radiance="16, 14, 8"/>
-<light mtlname="Desk_lamp" radiance="16, 14, 8"/>
+<!-- <light mtlname="Desk_lamp" radiance="16, 14, 8"/> -->

@@ -1,8 +1,4 @@
-# 蒙特卡洛路径追踪项目文档
-
-李林洲
-
-
+# Path Tracer
 
 ## 简介
 
@@ -118,13 +114,15 @@ $$
       2. 根据采样方向产生下一根光线。
    4. 根据俄罗斯轮盘赌决定是否停止路径追踪
 
+<div style="page-break-after:always;"></div>
+
 ## 实验结果
 
 ### 不同采样器对比
 
 spp=128，左：Independent Sampler；右：Sobol Sampler
 
-<img src="scenes/ind_sobol.png" alt="ind_sobol" width=1000/>
+<img src="scenes/ind_sobol.png" alt="ind_sobol" width=550/>
 
 从上图中可以看到使用低差异序列Sobol采样器可以减少噪点，降低方差。
 
@@ -132,7 +130,7 @@ spp=128，左：Independent Sampler；右：Sobol Sampler
 
 左：spp=512，BRDF重要性采样；右：spp=512，光源重要性采样；下：spp=128，BRDF+光源多重重要性采样
 
-<img src="scenes/brdf_light_mis.png" alt="brdf_light_mis" width=1000/>
+<img src="scenes/brdf_light_mis.png" alt="brdf_light_mis" width=550/>
 
 从左图中可以看出，由于只对BRDF采样，比较粗糙的glossy材质会难以采样到比较小的光源，所以导致图中左下角光斑噪点非常多。
 
@@ -146,11 +144,11 @@ Bathroom，spp=2048
 
 <img src="scenes/bathroom.png" alt="bathroom" width=700/>
 
-Library，spp=512，from: https://blendswap.com/blend/19984
+<div style="page-break-after:always;"></div>
 
-## 总结
+Library，spp=1024，from: https://blendswap.com/blend/19984
 
-
+<img src="scenes/library.png" alt="library"/>
 
 ## 参考文献
 

@@ -6,11 +6,12 @@
 namespace pt {
 
 struct BRDFSample {
-	BRDFSample(const Vector3f& wi_ = Vector3f(), float pdf_ = 0.0f, Vector3f f_ = Vector3f()) : wi(wi_), pdf(pdf_), f(f_) { }
+	BRDFSample(const Vector3f& wi_ = Vector3f(), float pdf_ = 0.0f, Vector3f f_ = Vector3f(), bool s = false) : wi(wi_), pdf(pdf_), f(f_), specular(s) { }
 
 	Vector3f wi;
 	float pdf;
 	Vector3f f;
+	bool specular = false;
 };
 
 class Material {

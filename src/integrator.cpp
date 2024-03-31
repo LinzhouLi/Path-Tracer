@@ -81,10 +81,16 @@ Vector3f PathIntegrator::Li(Scene* scene, Sampler* sampler, const Vector2f& pixe
 
 		// sample BRDF
 		BRDFSample bs = its.sampleBRDF(wo, sampler->sample1D(), sampler->sample2D());
-		if (bs.f.squaredNorm() == 0.0f || bs.pdf == 0.0f) break; // no enerage
-		Vector3f throughput =  bs.f * its.n.dot(bs.wi) / bs.pdf;
-		accThroughput = accThroughput.cwiseProduct(throughput);
-		brdfPdf = bs.pdf;
+		if (bs.specular) {
+			bounce--; // assume no energy loss (not right)
+			brdfPdf = 1.0;
+		}
+		else {
+			if (bs.f.squaredNorm() == 0.0f || bs.pdf == 0.0f) break; // no enerage
+			Vector3f throughput = bs.f * its.n.dot(bs.wi) / bs.pdf;
+			accThroughput = accThroughput.cwiseProduct(throughput);
+			brdfPdf = bs.pdf;
+		}
 
 		// new ray
 		ray = its.genRay(bs.wi);
