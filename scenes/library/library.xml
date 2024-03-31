@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<camera type="perspective" width="1280" height="720" fovy="60">
+	<eye x="1.6146" y="1.0" z="1.0596"/> 
+	<lookat x="0.2" y="1.2" z="0.7"/> 
+	<up x="0.0" y="1.0" z="0.0"/> 
+</camera>
+<light mtlname="Sconce_Glass.001" radiance="26, 26, 26"/>
+<light mtlname="Sconce_Glass" radiance="16, 14, 8"/>
+<light mtlname="Desk_lamp" radiance="16, 14, 8"/>

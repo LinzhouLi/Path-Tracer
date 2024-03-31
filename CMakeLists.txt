@@ -61,3 +61,5 @@ if (CMAKE_GENERATOR STREQUAL "Ninja")
 endif()
 
 target_compile_features(PathTracer PRIVATE cxx_std_17)
+
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/scenes DESTINATION ${CMAKE_CURRENT_BINARY_DIR})

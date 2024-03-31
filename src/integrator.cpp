@@ -24,6 +24,7 @@ Vector3f GeometryIntegrator::Li(Scene* scene, Sampler* sampler, const Vector2f& 
 	if (hit) {
 		Vector3f n = its.n;
 		return n;
+		cout << 11111 << endl;
 	}
 	else
 		return Vector3f(0);
@@ -46,7 +47,7 @@ Vector3f PathIntegrator::Li(Scene* scene, Sampler* sampler, const Vector2f& pixe
 	Vector3f L(0.0), accThroughput(1.0);
 	float brdfPdf;
 
-	for(int bounce = 0; bounce < 16; bounce++) {
+	for(int bounce = 0; bounce < 32; bounce++) {
 		Intersection its;
 		bool hit = scene->rayIntersect(ray, its);
 		if (!hit) break;

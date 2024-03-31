@@ -40,7 +40,6 @@ static constexpr float INV_TWOPI = 0.15915494309189533577f;
 static constexpr float INV_FOURPI = 0.07957747154594766788f;
 static constexpr float SQRT_TWO = 1.41421356237309504880f;
 static constexpr float INV_SQRT_TWO = 0.70710678118654752440f;
-static int threadCount = -1;
 
 /* Forward declarations */
 struct Color3f;

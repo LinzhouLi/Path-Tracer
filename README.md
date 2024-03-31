@@ -13,9 +13,25 @@
 - C++17
 - Cmake 3.28.1
 
-### 编译运行
+### 编译
 
-TODO
+使用Cmake编译项目。
+
+> 如果遇到OpenEXR第三方库中的Ilmlmf编译错误，则需要在`./ext/openexr/OpenEXR/IlmImf/ImfAttribute.cpp`文件第48行加入`\#include <functional>`
+
+### 运行
+
+```
+./PathTracer.exe <scene_name> -t <thread_count> -s <samples_per_pixel> --no-gui --bdpt
+```
+
+说明：
+
+- `<scene_name>`：选择渲染的场景，可选值为 `bathroom`, `cornell-box`, `library`, `veach-mis`，默认值为`cornell-box`（需保证`scenes`文件夹与可执行文件在同一目录下）。
+- `-t` / `--thread` ：渲染使用的线程数，若缺省则自适应选择。
+- `-s` / `--spp` ：每个像素的采样数，默认值为256。
+- `--no-gui`：不启用GUI，默认启用。
+- `--bdpt`：使用双向路径追踪，默认不使用（注意BDPT并没有实现正确，本项目给出的结果图均使用普通的MIS PT渲染得到）。
 
 ## 实现细节
 
@@ -69,7 +85,7 @@ z = sqrt(1-u[0]);
 pdf = z / M_PI;
 ```
 
-而specular lobe的重要性采样是：
+而specular lobe的重要性采样伪代码如下：
 
 <img src="scenes/phong_sample.png" alt="image-20240329221808887" width=400 />
 
@@ -106,15 +122,31 @@ $$
 
 ### 不同采样器对比
 
-spp=128，左：Independent Sampler，右：Sobol Sampler
+spp=128，左：Independent Sampler；右：Sobol Sampler
 
-<img src="scenes/ind_sobol.png" alt="ind_sobol" width=800/>
+<img src="scenes/ind_sobol.png" alt="ind_sobol" width=1000/>
 
 从上图中可以看到使用低差异序列Sobol采样器可以减少噪点，降低方差。
 
 ### 多重重要性采样
 
+左：spp=512，BRDF重要性采样；右：spp=512，光源重要性采样；下：spp=128，BRDF+光源多重重要性采样
 
+<img src="scenes/brdf_light_mis.png" alt="brdf_light_mis" width=1000/>
+
+从左图中可以看出，由于只对BRDF采样，比较粗糙的glossy材质会难以采样到比较小的光源，所以导致图中左下角光斑噪点非常多。
+
+从右图中可以看出，由于只对光源采样，在比较光滑的glossy材质表面采样面积较大光源时，大部分采样BRDF值都很小，所以导致图中右上角光斑噪点非常多。
+
+从下图中可以看出，结合BRDF和光源两种分布的MIS采样，能够在上述两种情况下都保持较低的variance。
+
+### 更多结果
+
+Bathroom，spp=2048
+
+<img src="scenes/bathroom.png" alt="bathroom" width=700/>
+
+Library，spp=512，from: https://blendswap.com/blend/19984
 
 ## 总结
 

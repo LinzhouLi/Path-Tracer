@@ -20,8 +20,8 @@
 using namespace pt;
 
 std::unique_ptr<Bitmap> writeBitmap(ImageBlock* sampleBlock, ImageBlock* splatBlock = nullptr, float splatScale = 1.0) {
-    cout << "Writing result to bitmap .. ";
-    cout.flush();
+    std::cout << "Writing result to bitmap .. ";
+    std::cout.flush();
     Timer timer;
 
     sampleBlock->lock();
@@ -44,7 +44,7 @@ std::unique_ptr<Bitmap> writeBitmap(ImageBlock* sampleBlock, ImageBlock* splatBl
     };
 
     tbb::parallel_for(range, map);
-    cout << "done. (took " << timer.elapsedString() << ")" << endl;
+    std::cout << "done. (took " << timer.elapsedString() << ")" << endl;
 
     sampleBlock->unlock();
     if (splatBlock) splatBlock->unlock();
@@ -98,15 +98,66 @@ void render(Scene* scene, Sampler* sampler, Integrator* integrator, ImageBlock* 
 }
 
 int main(int argc, char **argv) {
-    threadCount = tbb::task_scheduler_init::automatic;
-    tbb::task_scheduler_init init(threadCount);
 
-    std::string obj_path = "D:/code/Rendering/Path-Tracer/scenes/veach-mis/veach-mis.obj";
-    std::string xml_path = "D:/code/Rendering/Path-Tracer/scenes/veach-mis/veach-mis.xml";
-    std::string folder_path = getFolderPath(obj_path);
-
+    // default settings
+    int threadCount = tbb::task_scheduler_init::automatic;
+    std::string sceneName = "cornell-box"; // bathroom, cornell-box, library, veach-mis
     uint32_t spp = 256;
     bool useGui = true;
+    bool useBDPT = false;
+
+    // parsing arguments
+    for (int i = 1; i < argc; ++i) {
+        std::string token(argv[i]);
+        if (token == "-t" || token == "--threads") {
+            if (i + 1 >= argc) {
+                cerr << "\"--threads\" argument expects a positive integer following it." << endl;
+                return -1;
+            }
+            threadCount = atoi(argv[i + 1]);
+            i++;
+            if (threadCount <= 0) {
+                cerr << "\"--threads\" argument expects a positive integer following it." << endl;
+                return -1;
+            }
+            continue;
+        }
+        else if (token == "-s" || token == "--spp") {
+            if (i + 1 >= argc) {
+                cerr << "\"--spp\" argument expects a positive integer following it." << endl;
+                return -1;
+            }
+            spp = atoi(argv[i + 1]);
+            i++;
+            if (spp <= 0) {
+                cerr << "\"--spp\" argument expects a positive integer following it." << endl;
+                return -1;
+            }
+            continue;
+        }
+        else if (token == "--no-gui") {
+            useGui = false;
+            continue;
+        }
+        else if (token == "--bdpt") {
+            useBDPT = true;
+            continue;
+        }
+
+        if (token == "bathroom" || token == "cornell-box" || token == "library" || token == "veach-mis") {
+            sceneName = token;
+        }
+        else {
+			cerr << "Unknown argument: " << token << endl;
+			return -1;
+		}
+    }
+
+    // apply settings
+    tbb::task_scheduler_init init(threadCount);
+    std::string obj_path = tfm::format("./scenes/%s/%s.obj", sceneName, sceneName);
+    std::string xml_path = tfm::format("./scenes/%s/%s.xml", sceneName, sceneName);
+    std::string folder_path = getFolderPath(obj_path);
 
     try {
         // create scene
@@ -114,7 +165,7 @@ int main(int argc, char **argv) {
         scene.loadOBJ(obj_path);
         scene.loadXML(xml_path);
         scene.preprocess();
-        cout << scene.toString() << endl;
+        std::cout << scene.toString() << std::endl;
 
         // result block
         Vector2i screenSize = scene.getCamera()->getScreenSize();
@@ -133,8 +184,8 @@ int main(int argc, char **argv) {
         // rendering albedo map
         std::thread render_thread([&] {
             {
-                cout << "Rendering albedo map .. ";
-                cout.flush();
+                std::cout << "Rendering albedo map .. ";
+                std::cout.flush();
                 Timer timer;
 
                 BaseColorIntegrator integrator;
@@ -143,7 +194,7 @@ int main(int argc, char **argv) {
                 sampleResult.clear();
                 splatResult.clear();
                 render(&scene, &sampler, &integrator, &sampleResult);
-                cout << "done. (took " << timer.elapsedString() << ")" << endl;
+                std::cout << "done. (took " << timer.elapsedString() << ")" << endl;
 
                 auto result = writeBitmap(&sampleResult);
                 result.get()->savePNG(folder_path + "albedo.png");
@@ -152,8 +203,8 @@ int main(int argc, char **argv) {
 
             // rendering normal map
             {
-                cout << "Rendering normal map .. ";
-                cout.flush();
+                std::cout << "Rendering normal map .. ";
+                std::cout.flush();
                 Timer timer;
 
                 GeometryIntegrator integrator;
@@ -162,7 +213,7 @@ int main(int argc, char **argv) {
                 sampleResult.clear();
                 splatResult.clear();
                 render(&scene, &sampler, &integrator, &sampleResult);
-                cout << "done. (took " << timer.elapsedString() << ")" << endl;
+                std::cout << "done. (took " << timer.elapsedString() << ")" << endl;
 
                 auto result = writeBitmap(&sampleResult);
                 result.get()->savePNG(folder_path + "normal.png", false);
@@ -171,24 +222,30 @@ int main(int argc, char **argv) {
 
             // rendering
             {
-                cout << "Rendering .. ";
-                cout.flush();
+                std::cout << "Rendering .. ";
+                std::cout.flush();
                 Timer timer;
 
-                //BDPTIntegrator2 integrator;
-                PathIntegrator integrator;
-                integrator.setSplatBlock(&splatResult);
+                Integrator* integrator;
+                if (useBDPT) { 
+                    integrator = new BDPTIntegrator2(); // a wrong BDPT integrator
+                    integrator->setSplatBlock(&splatResult);
+                }
+                else {
+                    integrator = new PathIntegrator();
+                }
                 SobolSampler sampler(spp, screenSize);
                 //IndependentSampler sampler(spp);
 
                 sampleResult.clear();
                 splatResult.clear();
-                render(&scene, &sampler, &integrator, &sampleResult);
+                render(&scene, &sampler, integrator, &sampleResult);
+                delete integrator;
 
                 auto result = writeBitmap(&sampleResult, &splatResult, splatScale);
                 result.get()->savePNG(folder_path + "result.png");
                 result.get()->saveEXR(folder_path + "result.exr");
-                cout << "done. (took " << timer.elapsedString() << ")" << endl;
+                std::cout << "done. (took " << timer.elapsedString() << ")" << endl;
             }
         });
 
